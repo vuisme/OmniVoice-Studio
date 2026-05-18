@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Globe, Fingerprint, Wand2, Film, FolderOpen, Settings2, ArrowLeftRight,
-  Library, FileText,
+  Library, FileText, BookOpen,
 } from 'lucide-react';
 
 const ITEMS = [
@@ -9,6 +9,7 @@ const ITEMS = [
   { id: 'clone',     label: 'Clone',     Icon: Fingerprint, accent: '#d3869b' },
   { id: 'design',    label: 'Design',    Icon: Wand2,       accent: '#8ec07c' },
   { id: 'dub',       label: 'Dub',       Icon: Film,        accent: '#fe8019' },
+  { id: 'stories',   label: 'Stories',   Icon: BookOpen,    accent: '#fabd2f' },
   { id: 'gallery',   label: 'Gallery',   Icon: Library,     accent: '#b8bb26' },
   { id: 'transcriptions', label: 'Transcripts', Icon: FileText, accent: '#d3869b' },
   { id: 'projects',  label: 'OmniDrive',  Icon: FolderOpen,  accent: '#83a598' },

@@ -2,7 +2,8 @@
 //  OmniVoice design-system barrel
 //
 //  Import from here, not the individual files:
-//    import { Button, Panel, Field, Input, Select, Dialog, Slider, Badge } from '@/ui';
+//    import { Button, Panel, Field, Input, Select, Dialog, Slider, Badge } from '../ui';
+//  (No '@/' alias is configured in vite.config.js — use a relative path.)
 //
 //  Tokens are imported once here so any file that reaches for a primitive
 //  also pulls in the full token scale.

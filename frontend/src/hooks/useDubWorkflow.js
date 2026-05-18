@@ -96,6 +96,14 @@ export default function useDubWorkflow({ loadProjects, loadProfiles, loadDubHist
         }
       } catch (err) { console.warn('Transcribe SSE handler failed:', err); }
     });
+    evt.addEventListener('warning', (e) => {
+      try {
+        const m = JSON.parse(e.data);
+        if (m && m.detail) {
+          toast(m.detail, { icon: '⚠️', duration: 8000 });
+        }
+      } catch { /* malformed warning event */ }
+    });
     evt.addEventListener('done', () => { close(); ctrl.signal.removeEventListener('abort', onAbortSignal); resolve(); });
     evt.addEventListener('aborted', () => { close(); ctrl.signal.removeEventListener('abort', onAbortSignal); reject(Object.assign(new Error('aborted'), { name: 'AbortError' })); });
     evt.addEventListener('error', (e) => {

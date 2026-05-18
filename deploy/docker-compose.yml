@@ -2,8 +2,11 @@
 #  OmniVoice Studio — Docker Compose
 #
 #  Quick start:
-#    docker compose -f deploy/docker-compose.yml up                 # CPU mode
+#    docker compose -f deploy/docker-compose.yml --profile cpu up   # CPU mode
 #    docker compose -f deploy/docker-compose.yml --profile gpu up   # GPU mode
+#
+#  Both services bind to port 3900, so they MUST be opt-in via profiles —
+#  otherwise `compose up` would race them and one would fail to bind.
 #
 #  First run downloads ~4 GB of models. Progress is shown in logs.
 #  Open http://localhost:3900 once the health check passes.
@@ -26,6 +29,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile
     container_name: omnivoice-studio
+    profiles: ["cpu"]
     ports:
       - "127.0.0.1:3900:3900"
     volumes:

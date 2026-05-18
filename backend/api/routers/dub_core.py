@@ -528,23 +528,55 @@ async def dub_transcribe_stream(job_id: str):
             return
 
         def _diarize():
+            """Returns (segments, warning_or_None).
+
+            Warning is set when we silently fell back to the silence-gap
+            heuristic (no HF_TOKEN, model unavailable, or pyannote raised).
+            The heuristic only detects speaker turns from >1.2s silences,
+            so a rapid-fire man↔woman exchange will read as one speaker.
+            """
             diar_pipe = get_diarization_pipeline()
+            if not diar_pipe:
+                if not os.environ.get("HF_TOKEN"):
+                    reason = (
+                        "Speaker diarization is disabled because no HF_TOKEN is set. "
+                        "To detect multiple speakers, set HF_TOKEN and accept the "
+                        "pyannote/speaker-diarization-3.1 license at huggingface.co. "
+                        "Falling back to a silence-gap heuristic — turns with no audible "
+                        "pause between them will be merged into one speaker."
+                    )
+                else:
+                    reason = (
+                        "Speaker diarization model failed to load — see backend logs for "
+                        "the underlying error (often: pyannote license not accepted on "
+                        "Hugging Face, or download blocked by network). Falling back to "
+                        "a silence-gap heuristic; rapid speaker turns may be merged."
+                    )
+                return assign_speakers_heuristic(all_segments), reason
             try:
-                if diar_pipe:
-                    diar = diar_pipe(asr_audio_target)
-                    return assign_speakers_from_diarization(all_segments, diar)
+                diar = diar_pipe(asr_audio_target)
+                return assign_speakers_from_diarization(all_segments, diar), None
             except Exception as e:
                 logger.error(f"Diarization failed: {e}")
-            return assign_speakers_heuristic(all_segments)
+                return (
+                    assign_speakers_heuristic(all_segments),
+                    f"Speaker diarization crashed mid-run ({type(e).__name__}); "
+                    "falling back to a silence-gap heuristic. Rapid speaker turns "
+                    "may be merged."
+                )
 
         fut_diar = loop.run_in_executor(_gpu_pool, _diarize)
         final_segs = None
+        diar_warning = None
         while True:
             done, pending = await asyncio.wait([fut_diar], timeout=5.0)
             if done:
-                final_segs = done.pop().result()
+                final_segs, diar_warning = done.pop().result()
                 break
             yield _sse_event("ping", {})
+        if diar_warning:
+            logger.warning("diarization fallback: %s", diar_warning)
+            yield _sse_event("warning", {"detail": diar_warning, "source": "diarization"})
 
         job["segments"] = final_segs
 

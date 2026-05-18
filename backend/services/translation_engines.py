@@ -144,11 +144,16 @@ def is_installed(engine_id: str) -> bool:
     return ok
 
 
+def _in_virtualenv() -> bool:
+    """True if the current interpreter is inside a venv/virtualenv."""
+    return getattr(sys, "base_prefix", sys.prefix) != sys.prefix or hasattr(sys, "real_prefix")
+
+
 def _installer_cmd() -> list[str]:
     """Prefer `uv pip` (the dev install's default), fall back to `python -m pip`.
 
-    Using `python -m pip` ensures we target the same interpreter the server
-    is running under — avoids the classic "pip installed into the wrong venv"
+    `python -m pip` ensures we target the same interpreter the server is
+    running under — avoids the classic "pip installed into the wrong venv"
     footgun.
     """
     if shutil.which("uv"):
@@ -161,8 +166,19 @@ async def run_pip(args: list[str], timeout: float = 600.0) -> tuple[int, str]:
 
     Combines stdout + stderr so the UI can surface a useful tail on failure
     (pip's "ERROR: ..." lines go to stderr).
+
+    When using `uv pip` and running outside a venv (e.g. inside the Docker
+    image where Python runs as system), inject `--system` after the
+    install/uninstall subcommand. Without it, uv refuses to write to system
+    Python with: "No virtual environment found; run `uv venv` to create an
+    environment, or pass `--system`...". The `UV_SYSTEM_PYTHON` env var only
+    affects `uv venv`, not `uv pip install`.
     """
-    cmd = _installer_cmd() + args
+    base = _installer_cmd()
+    using_uv = base[:1] == ["uv"]
+    if using_uv and not _in_virtualenv() and args and args[0] in ("install", "uninstall") and "--system" not in args:
+        args = [args[0], "--system", *args[1:]]
+    cmd = base + args
     logger.info("pip: %s", " ".join(cmd))
     try:
         proc = await asyncio.create_subprocess_exec(

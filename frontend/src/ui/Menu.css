@@ -1,7 +1,9 @@
 /* ── Menu primitive ─────────────────────────────────────────────── */
 
 .ui-menu {
-  position: fixed;
+  /* Position is set by Radix via inline styles — declaring `position` here
+   * (especially `fixed`) fights its anchored placement and can cause the
+   * popover to render against the viewport edge instead of the trigger. */
   z-index: var(--z-overlay);
   min-width: 160px;
   max-width: 320px;

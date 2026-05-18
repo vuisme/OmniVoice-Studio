@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect, useCallback } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback, useRef } from 'react';
 import {
   PanelLeftOpen, PanelLeftClose, Film, Save, UploadCloud, Sparkles, Loader, Square,
   FileText, Play, DownloadIcon, Volume2, Link2,
@@ -90,6 +90,12 @@ export default function DubTab(props) {
   const setBurnSubs         = useAppStore(s => s.setBurnSubs);
 
   const showIdleSkeleton = !(dubJobId && (dubStep === 'editing' || dubStep === 'generating' || dubStep === 'done'));
+  // Imperative handle to the post-job waveform so the transcript table can
+  // seek the player when the user clicks a row.
+  const waveformRef = useRef(null);
+  const seekWaveform = useCallback((time) => {
+    waveformRef.current?.seekTo?.(time);
+  }, []);
   const [ingestUrl, setIngestUrl] = useState('');
   const [previewMode, setPreviewMode] = useState('original'); // 'original' | 'dubbed'
   const [exportOpen, setExportOpen] = useState(false);
@@ -543,6 +549,7 @@ export default function DubTab(props) {
               )}
               <WaveformTimeline
                 key={videoSrc}
+                ref={waveformRef}
                 audioSrc={`${API}/dub/audio/${dubJobId}`}
                 videoSrc={videoSrc}
                 segments={dubSegments}
@@ -907,6 +914,7 @@ export default function DubTab(props) {
                   onDirect={onDirectSegment}
                   onSplit={segmentSplit}
                   onMerge={segmentMerge}
+                  onSeek={seekWaveform}
                 />
               </Suspense>
             </div>

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useRef } from 'react';
 import {
   CheckCircle, AlertCircle, Circle, Trash2, Loader, Headphones, Scissors, Merge,
   MoreHorizontal, Sparkles,
@@ -10,16 +10,53 @@ import { Menu, Button, Badge } from '../ui';
 import './DubSegmentRow.css';
 
 const CHAR_BUDGET_RATIO = 1.3;
+const SENTENCE_END = /[.!?。！？]/;
 
 function rowClass(isActive, isDone, selected) {
   return `segment-row${isActive ? ' segment-active' : ''}${isDone ? ' segment-done' : ''}${selected ? ' segment-selected' : ''}`;
 }
 
+// Best split point for the Scissors menu when the user hasn't placed a cursor —
+// prefer the sentence boundary nearest the middle, then a whitespace boundary,
+// then the literal midpoint as a last resort.
+function bestSplitPoint(text) {
+  const mid = Math.floor(text.length / 2);
+  let best = -1, bestDist = Infinity;
+  for (let i = 0; i < text.length; i++) {
+    if (SENTENCE_END.test(text[i])) {
+      const d = Math.abs(i + 1 - mid);
+      if (d < bestDist) { best = i + 1; bestDist = d; }
+    }
+  }
+  if (best > 0 && best < text.length) return best;
+  for (let r = 0; r < text.length; r++) {
+    for (const i of [mid - r, mid + r]) {
+      if (i > 0 && i < text.length && /\s/.test(text[i])) return i;
+    }
+  }
+  return mid;
+}
+
+// Accept "m:ss[.s]" or raw seconds; return null on garbage so the field can revert.
+function parseTime(s) {
+  const m = /^\s*(\d+):([0-5]?\d(?:\.\d+)?)\s*$/.exec(s);
+  if (m) return parseInt(m[1], 10) * 60 + parseFloat(m[2]);
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : null;
+}
+
 function DubSegmentRow({
   seg, idx, style, disabled, isActive, isDone, previewLoading, selected,
   profiles, speakerClones, onEditField, onDelete, onRestore, onPreview, onSelect, onSplit, onMerge, canMerge,
-  onDirect,
+  onDirect, onSeek,
 }) {
+  const textInputRef = useRef(null);
+  // Remember where the caret was inside the text field even after it loses
+  // focus — Radix's menu trigger steals focus, so by the time the Scissors
+  // item fires, selectionStart on the input would otherwise read as null.
+  const lastCursorRef = useRef(null);
+  const speakerOptions = speakerClones ? Object.keys(speakerClones) : [];
+  const speakerListId = `seg-speakers-${seg.id}`;
   const syncColor = seg.sync_ratio === undefined ? null
     : (seg.sync_ratio >= 0.95 && seg.sync_ratio <= 1.05) ? '#b8bb26'
     : seg.sync_ratio > 1.25 ? '#fb4934'
@@ -44,8 +81,22 @@ function DubSegmentRow({
     }
   };
 
+  const captureCursor = (e) => {
+    const pos = e.target.selectionStart;
+    if (pos != null) lastCursorRef.current = pos;
+  };
+
+  // Row click → seek the player to this segment. We don't fire when the click
+  // originates in an interactive element (input, button, the actions cluster)
+  // so per-field editing keeps working.
+  const handleRowClick = (e) => {
+    if (!onSeek) return;
+    if (e.target.closest('input, button, select, textarea, label, [data-noseek]')) return;
+    onSeek(seg.start);
+  };
+
   return (
-    <div style={style} className={rowClass(isActive, isDone, selected)}>
+    <div style={style} className={rowClass(isActive, isDone, selected)} onClick={handleRowClick}>
       <input
         type="checkbox"
         checked={!!selected}
@@ -57,8 +108,34 @@ function DubSegmentRow({
         title="Select segment (shift+click for range)"
       />
       <span className="segment-time seg-time">
-        <span>
-          {formatTime(seg.start)}–{formatTime(seg.end)}
+        <span className="seg-time-row">
+          <input
+            type="text"
+            className="seg-time-input"
+            defaultValue={formatTime(seg.start)}
+            key={`start-${seg.id}-${seg.start}`}
+            disabled={disabled}
+            title="Click to edit start time (m:ss.s). Enter to commit, Esc to cancel."
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.target.blur();
+              if (e.key === 'Escape') { e.target.value = formatTime(seg.start); e.target.blur(); }
+            }}
+            onBlur={(e) => {
+              const v = parseTime(e.target.value);
+              if (v == null || v < 0 || v >= seg.end) {
+                e.target.value = formatTime(seg.start);
+                return;
+              }
+              if (Math.abs(v - seg.start) > 1e-3) {
+                onEditField(seg.id, 'start', +v.toFixed(3));
+              } else {
+                e.target.value = formatTime(seg.start);
+              }
+            }}
+          />
+          <span className="seg-time-sep">–</span>
+          <span className="seg-time-end">{formatTime(seg.end)}</span>
           {seg.speed && seg.speed !== 1.0 && (
             <span className="seg-speed-badge" style={{ color: seg.speed > 1 ? '#d3869b' : '#8ec07c' }}>
               {seg.speed.toFixed(2)}x
@@ -89,16 +166,30 @@ function DubSegmentRow({
         className="input-base seg-speaker-input"
         value={seg.speaker_id || ''}
         onChange={(e) => onEditField(seg.id, 'speaker_id', e.target.value)}
+        onClick={(e) => e.stopPropagation()}
         disabled={disabled}
-        title="Speaker ID"
+        list={speakerOptions.length ? speakerListId : undefined}
+        placeholder={speakerOptions.length ? 'Pick…' : ''}
+        title={speakerOptions.length
+          ? 'Speaker — pick from detected, or type a custom name'
+          : 'Speaker — type a name (no diarization clones detected)'}
       />
+      {speakerOptions.length > 0 && (
+        <datalist id={speakerListId}>
+          {speakerOptions.map(spk => <option key={spk} value={spk} />)}
+        </datalist>
+      )}
 
       <span className="seg-text-col">
         <input
+          ref={textInputRef}
           className="input-base segment-input"
           value={seg.text}
           onChange={(e) => onEditField(seg.id, 'text', e.target.value)}
           onKeyDown={handleTextKeyDown}
+          onKeyUp={captureCursor}
+          onSelect={captureCursor}
+          onClick={(e) => { e.stopPropagation(); captureCursor(e); }}
           disabled={disabled}
           title={seg.translate_error
             ? `Translation error: ${seg.translate_error}`
@@ -209,7 +300,20 @@ function DubSegmentRow({
               label: 'Split at cursor',
               icon: Scissors,
               shortcut: '⌘D',
-              onSelect: () => onSplit(seg.id, Math.floor(seg.text.length / 2)),
+              onSelect: () => {
+                // Prefer the live cursor if the text input still has focus,
+                // otherwise fall back to the last remembered position, then
+                // to a sentence-boundary heuristic. Splitting at the literal
+                // midpoint (the old behaviour) felt random to users.
+                let pos = textInputRef.current?.selectionStart;
+                if (pos == null || pos <= 0 || pos >= seg.text.length) {
+                  pos = lastCursorRef.current;
+                }
+                if (pos == null || pos <= 0 || pos >= seg.text.length) {
+                  pos = bestSplitPoint(seg.text);
+                }
+                onSplit(seg.id, pos);
+              },
             },
             {
               id: 'merge',
@@ -248,6 +352,7 @@ export default memo(DubSegmentRow, (prev, next) => (
   prev.isDone === next.isDone &&
   prev.previewLoading === next.previewLoading &&
   prev.onDirect === next.onDirect &&
+  prev.onSeek === next.onSeek &&
   prev.selected === next.selected &&
   prev.canMerge === next.canMerge &&
   prev.profiles === next.profiles &&

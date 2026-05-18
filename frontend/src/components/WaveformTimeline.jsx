@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import MinimapPlugin from 'wavesurfer.js/dist/plugins/minimap.esm.js';
@@ -27,14 +27,14 @@ const REGION_COLORS = [
  *   disabled       – locks drag/resize of regions
  *   overlayContent – React node rendered as a translucent overlay on the waveform
  */
-export default function WaveformTimeline({
+function WaveformTimeline({
   audioSrc,
   videoSrc,
   segments = [],
   onSegmentsChange,
   disabled = false,
   overlayContent,
-}) {
+}, ref) {
   const waveContainerRef = useRef(null);  // div WaveSurfer draws into
   const videoContainerRef = useRef(null); // div we imperatively append the <video> into
   const wsRef         = useRef(null);
@@ -327,6 +327,43 @@ export default function WaveformTimeline({
     });
   }, [fingerprint, ready, disabled, segments]);
 
+  // Imperative seek + scroll hooks — used by the transcript table to jump the
+  // player to a clicked row, and by the mouse-wheel handler below.
+  useImperativeHandle(ref, () => ({
+    seekTo(time) {
+      const ws = wsRef.current;
+      if (ws && ready) {
+        try {
+          const d = ws.getDuration?.() || duration || 0;
+          const t = Math.max(0, Math.min(time, d || time));
+          if (typeof ws.setTime === 'function') ws.setTime(t);
+          else if (typeof ws.seekTo === 'function' && d > 0) ws.seekTo(t / d);
+        } catch (err) { console.warn('WaveSurfer seek failed:', err); }
+        return;
+      }
+      const el = mediaElRef.current;
+      if (el && Number.isFinite(time)) {
+        try { el.currentTime = Math.max(0, time); } catch (err) { console.warn('media seek failed:', err); }
+      }
+    },
+  }), [ready, duration]);
+
+  // Horizontal mouse-wheel → scroll the waveform. WaveSurfer doesn't bind this
+  // by default; users expect to spin the wheel over a long timeline. We also
+  // honour vertical wheel (most mice) as horizontal motion.
+  const onWaveWheel = useCallback((e) => {
+    const ws = wsRef.current;
+    if (!ws || !ready) return;
+    const wrap = ws.getWrapper?.();
+    if (!wrap) return;
+    // Don't fight the page when ctrl/cmd is held — that pinches zoom in browsers.
+    if (e.ctrlKey || e.metaKey) return;
+    const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (!dx) return;
+    e.preventDefault();
+    wrap.scrollLeft += dx;
+  }, [ready]);
+
   const togglePlay = useCallback(() => {
     if (wsRef.current) {
       wsRef.current.playPause();
@@ -399,6 +436,7 @@ export default function WaveformTimeline({
           <div
             ref={waveContainerRef}
             className="waveform-container wfm-wave-inner"
+            onWheel={onWaveWheel}
           />
 
           {/* Loading shimmer */}
@@ -439,3 +477,5 @@ export default function WaveformTimeline({
     </div>
   );
 }
+
+export default forwardRef(WaveformTimeline);

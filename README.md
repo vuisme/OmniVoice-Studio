@@ -228,9 +228,9 @@ docker run -d --name omnivoice --gpus all \
 
 ```bash
 # CPU
-docker compose -f deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml --profile cpu up -d
 
-# GPU
+# GPU (NVIDIA)
 docker compose -f deploy/docker-compose.yml --profile gpu up -d
 ```
 

@@ -19,6 +19,7 @@ export type AppMode =
   | 'dub'
   | 'clone'
   | 'design'
+  | 'stories'
   | 'voice'
   | 'tools'
   | 'batch'

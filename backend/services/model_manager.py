@@ -34,8 +34,79 @@ from core.config import IDLE_TIMEOUT_SECONDS, CPU_POOL_WORKERS
 
 logger = logging.getLogger("omnivoice.model")
 
-_gpu_pool = ThreadPoolExecutor(max_workers=1)
+# Per-TTS-job VRAM headroom estimate. OmniVoice's forward + autoregressive
+# decode peaks around 1.6 GB on a 24 kHz 8-second utterance; we budget 2.5 GB
+# to leave room for the ASR/diarization pipelines that run concurrently in
+# the same process. Tuned empirically — bumps to 3 GB if anyone reports OOM
+# at 16 GB on a multi-segment dub.
+_GPU_VRAM_PER_JOB_GB = 2.5
+_GPU_WORKER_CAP = 4
+
+_gpu_pool_singleton: "ThreadPoolExecutor | None" = None
 _cpu_pool = ThreadPoolExecutor(max_workers=CPU_POOL_WORKERS)
+
+
+def _pick_gpu_workers() -> int:
+    """Pick a sensible GPU worker count from the runtime environment.
+
+    Resolution order:
+      1. OMNIVOICE_GPU_WORKERS env var (explicit user override, clamped 1..16).
+      2. CUDA / ROCm: free VRAM // per-job budget, capped at 4.
+      3. MPS / CPU / unknown: 1.
+
+    Designed to fail safe — any exception → 1 worker, never propagated.
+    """
+    override = os.environ.get("OMNIVOICE_GPU_WORKERS")
+    if override:
+        try:
+            n = int(override)
+            return max(1, min(16, n))
+        except ValueError:
+            logger.warning("OMNIVOICE_GPU_WORKERS=%r is not an integer; ignoring", override)
+    try:
+        torch = _lazy_torch()
+        if hasattr(torch, "cuda") and torch.cuda.is_available():
+            free_bytes, _total = torch.cuda.mem_get_info()
+            free_gb = free_bytes / (1024 ** 3)
+            workers = max(1, min(_GPU_WORKER_CAP, int(free_gb // _GPU_VRAM_PER_JOB_GB)))
+            logger.info(
+                "GPU pool sized to %d worker(s) — %.1f GB free / %.1f GB per job (cap %d)",
+                workers, free_gb, _GPU_VRAM_PER_JOB_GB, _GPU_WORKER_CAP,
+            )
+            return workers
+        if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+            logger.info("GPU pool: MPS detected, using 1 worker (shared system memory)")
+            return 1
+    except Exception as e:
+        logger.warning("GPU worker probe failed (%s); defaulting to 1", e)
+    return 1
+
+
+def _build_gpu_pool() -> ThreadPoolExecutor:
+    workers = _pick_gpu_workers()
+    return ThreadPoolExecutor(max_workers=workers, thread_name_prefix="gpu-pool")
+
+
+def _get_gpu_pool() -> ThreadPoolExecutor:
+    """Internal accessor. Same singleton as the module-level `_gpu_pool`
+    attribute, but resolvable from inside this module (Python's module
+    `__getattr__` only fires for unresolved lookups from *outside*).
+    """
+    global _gpu_pool_singleton
+    if _gpu_pool_singleton is None:
+        _gpu_pool_singleton = _build_gpu_pool()
+    return _gpu_pool_singleton
+
+
+def __getattr__(name: str):
+    """Lazy module attribute — initialises `_gpu_pool` on first access so we
+    can probe the device after torch finishes its lazy import. Without this
+    we'd be forced to commit to max_workers=1 at module import time, before
+    knowing whether CUDA is even available.
+    """
+    if name == "_gpu_pool":
+        return _get_gpu_pool()
+    raise AttributeError(f"module 'services.model_manager' has no attribute {name!r}")
 
 model = None  # type: ignore
 _model_lock = asyncio.Lock()
@@ -283,7 +354,7 @@ async def preload_model():
         async with _model_lock:
             if model is None:
                 loop = asyncio.get_running_loop()
-                model = await loop.run_in_executor(_gpu_pool, _load_model_sync)
+                model = await loop.run_in_executor(_get_gpu_pool(), _load_model_sync)
         logger.info("Preload complete — model ready.")
     except Exception as e:
         logger.warning("Model preload failed (non-fatal): %s", e)

@@ -20,7 +20,7 @@ const COLUMNS = [
 export default function DubSegmentTable({
   segments, profiles, speakerClones, dubStep, dubProgress, previewLoadingId,
   selectedIds, onSelect, onSelectAll, onClearSelection,
-  onEditField, onDelete, onRestore, onPreview, onSplit, onMerge, onDirect,
+  onEditField, onDelete, onRestore, onPreview, onSplit, onMerge, onDirect, onSeek,
 }) {
   const disabled = dubStep === 'generating' || dubStep === 'stopping';
   const [query, setQuery] = useState('');
@@ -67,12 +67,12 @@ export default function DubSegmentTable({
 
   const rowProps = useMemo(() => ({
     filtered, profiles, speakerClones, disabled, dubStep, dubProgress, previewLoadingId,
-    selectedIds, onSelect, onEditField, onDelete, onRestore, onPreview, onSplit, onMerge, onDirect,
+    selectedIds, onSelect, onEditField, onDelete, onRestore, onPreview, onSplit, onMerge, onDirect, onSeek,
     segments,
   }), [filtered, profiles, speakerClones, disabled, dubStep, dubProgress, previewLoadingId,
-      selectedIds, onSelect, onEditField, onDelete, onRestore, onPreview, onSplit, onMerge, onDirect, segments]);
+      selectedIds, onSelect, onEditField, onDelete, onRestore, onPreview, onSplit, onMerge, onDirect, onSeek, segments]);
 
-  const Row = useCallback(({ index, style, filtered: fl, profiles: profs, speakerClones: clones, disabled: dis, dubProgress: prog, dubStep: step, previewLoadingId: previewId, selectedIds: sel, onSelect: pick, onEditField: edit, onDelete: del, onRestore: rest, onPreview: prev, onSplit: split, onMerge: merge, onDirect: direct, segments: segs }) => {
+  const Row = useCallback(({ index, style, filtered: fl, profiles: profs, speakerClones: clones, disabled: dis, dubProgress: prog, dubStep: step, previewLoadingId: previewId, selectedIds: sel, onSelect: pick, onEditField: edit, onDelete: del, onRestore: rest, onPreview: prev, onSplit: split, onMerge: merge, onDirect: direct, onSeek: seek, segments: segs }) => {
     const seg = fl[index];
     if (!seg) return null;
     const absoluteIndex = segs.indexOf(seg);
@@ -89,7 +89,7 @@ export default function DubSegmentTable({
         profiles={profs}
         speakerClones={clones}
         onEditField={edit} onDelete={del} onRestore={rest} onPreview={prev}
-        onSelect={pick} onSplit={split} onMerge={merge} onDirect={direct}
+        onSelect={pick} onSplit={split} onMerge={merge} onDirect={direct} onSeek={seek}
       />
     );
   }, []);

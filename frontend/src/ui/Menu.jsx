@@ -56,6 +56,8 @@ export default function Menu({
           side={side}
           align={align}
           sideOffset={4}
+          avoidCollisions
+          collisionPadding={8}
           className={`ui-menu ui-menu--below ui-menu--${align}`}
           style={width ? { width } : undefined}
         >
