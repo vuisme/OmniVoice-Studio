@@ -9,6 +9,16 @@ _backend_dir = os.path.dirname(os.path.abspath(__file__))
 if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
+# Triton is unavailable on Windows — disable torch.compile / dynamo / inductor
+# to prevent TritonMissing errors at inference time. Must be set before torch
+# is imported (it is lazily imported in services/model_manager.py). Uses
+# setdefault so an explicit user-set value is never overridden, and is guarded
+# to win32 so cross-platform default behavior is unchanged.
+if sys.platform == "win32":
+    os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
+    os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
+    os.environ.setdefault("TORCHINDUCTOR_DISABLE", "1")
+
 try:
     import dotenv
 
