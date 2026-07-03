@@ -15,6 +15,7 @@ import {
   Heart,
   Mail,
   Sparkles,
+  Braces,
   Gem,
 } from 'lucide-react';
 
@@ -131,6 +132,13 @@ const DISCORD_BTN =
   'flex items-center justify-center w-[var(--chrome-icon-btn)] h-[var(--chrome-icon-btn)] shrink-0 ' +
   'rounded-[4px] bg-transparent border-0 cursor-pointer [color:#7289da] opacity-60 ' +
   'transition-[color,opacity,transform] duration-150 hover:opacity-100 hover:[color:#5865F2] hover:scale-110';
+
+// API-reference button: same compact footer-icon shell as Discord/Mail but on
+// the neutral chrome-muted palette, hovering to the theme accent.
+const API_REF_BTN =
+  'flex items-center justify-center w-[var(--chrome-icon-btn)] h-[var(--chrome-icon-btn)] shrink-0 ' +
+  'rounded-[4px] bg-transparent border-0 cursor-pointer [color:var(--chrome-fg-muted)] opacity-70 ' +
+  'transition-[color,opacity,transform] duration-150 hover:opacity-100 hover:[color:var(--chrome-accent)] hover:scale-110';
 
 const DONATE_BTN =
   'flex items-center justify-center w-[var(--chrome-icon-btn)] h-[var(--chrome-icon-btn)] shrink-0 ' +
@@ -624,6 +632,15 @@ export default function LogsFooter() {
             )}
           </button>
           <NetworkToggle />
+          <button
+            type="button"
+            className={API_REF_BTN}
+            onClick={() => useAppStore.getState().openSettingsTab?.('openapi')}
+            title={t('logs.open_api', { defaultValue: 'API reference' })}
+            aria-label={t('logs.open_api_aria', { defaultValue: 'Open the OpenAPI reference' })}
+          >
+            <Braces size={14} aria-hidden="true" />
+          </button>
           <button
             type="button"
             className={DISCORD_BTN}
