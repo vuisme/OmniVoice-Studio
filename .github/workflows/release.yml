@@ -526,7 +526,7 @@ jobs:
           tagName: ${{ (needs.preview-gate.outputs.is_preview == 'true') && 'preview' || github.ref_name }}
           # Version-first so the tag is readable in GitHub's truncated
           # release-list sidebar (which clips the title mid-string).
-          releaseName: ${{ (needs.preview-gate.outputs.is_preview == 'true') && 'Preview — OmniVoice Studio' || format('{0} — OmniVoice Studio', github.ref_name) }}
+          releaseName: ${{ (needs.preview-gate.outputs.is_preview == 'true') && 'Preview — MiloAnCutlabs' || format('{0} — MiloAnCutlabs', github.ref_name) }}
           releaseBody: ${{ steps.changelog.outputs.body }}
           releaseDraft: ${{ (needs.preview-gate.outputs.is_preview == 'true') && 'false' || (inputs.draft || 'true') }}
           prerelease: ${{ needs.preview-gate.outputs.is_preview == 'true' }}
@@ -603,11 +603,26 @@ jobs:
           echo "Smoke-testing MSI: $MSI"
           # /quiet = no UI, /norestart = don't reboot the runner if a dep asks
           msiexec.exe //i "$(cygpath -w "$MSI")" //quiet //norestart
-          INSTALL="/c/Program Files/OmniVoice Studio"
-          fail() { echo "FAIL — $1. Contents:"; find "$INSTALL" -maxdepth 4 -type f 2>/dev/null | head -40; exit 1; }
+          INSTALL=""
+          for dir in "/c/Program Files/MiloAnCutlabs" "/c/Program Files/OmniVoice Studio"; do
+            if [ -d "$dir" ]; then
+              INSTALL="$dir"
+              break
+            fi
+          done
+          fail() {
+            echo "FAIL — $1. Contents:"
+            if [ -n "$INSTALL" ]; then
+              find "$INSTALL" -maxdepth 4 -type f 2>/dev/null | head -40
+            else
+              find "/c/Program Files" -maxdepth 2 -type f \( -iname '*MiloAnCutlabs*' -o -iname '*omnivoice*' \) 2>/dev/null | head -40
+            fi
+            exit 1
+          }
+          [ -n "$INSTALL" ] || fail "install directory missing"
           # Thin uv-venv installer ships no frozen backend .exe — verify the
           # install is complete: shell exe + bundled uv + backend source resources.
-          test -f "$INSTALL/omnivoice-studio.exe" || fail "shell exe missing"
+          find "$INSTALL" -maxdepth 2 -type f \( -iname 'omnivoice-studio.exe' -o -iname 'MiloAnCutlabs.exe' \) | grep -q . || fail "shell exe missing"
           test -f "$INSTALL/uv.exe" || fail "bundled uv missing"
           find "$INSTALL" -type f -name 'pyproject.toml' | grep -q . || fail "backend resource pyproject.toml missing"
           find "$INSTALL" -type f -path '*backend*main.py' | grep -q . || fail "backend source main.py missing"
@@ -635,7 +650,7 @@ jobs:
           fail() { echo "FAIL — $1"; find "$ROOT" -maxdepth 5 -type f 2>/dev/null | head -40; exit 1; }
           # Thin uv-venv installer: verify the AppImage carries the shell binary,
           # the bundled uv sidecar, and the backend source resources.
-          { [ -f "$ROOT/AppRun" ] || find "$ROOT" -type f \( -name "OmniVoice Studio" -o -name "omnivoice-studio" \) | grep -q .; } || fail "shell binary / AppRun missing"
+          { [ -f "$ROOT/AppRun" ] || find "$ROOT" -type f \( -name "MiloAnCutlabs" -o -name "OmniVoice Studio" -o -name "omnivoice-studio" \) | grep -q .; } || fail "shell binary / AppRun missing"
           find "$ROOT" -type f -name 'uv' | grep -q . || fail "bundled uv sidecar missing"
           find "$ROOT" -type f -name 'pyproject.toml' | grep -q . || fail "backend resource pyproject.toml missing"
           find "$ROOT" -type f -path '*/backend/main.py' | grep -q . || fail "backend source backend/main.py missing"
