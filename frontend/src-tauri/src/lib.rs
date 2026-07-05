@@ -1,4 +1,4 @@
-//! OmniVoice Studio — Tauri desktop shell.
+//! MLACLabs — Tauri desktop shell.
 //!
 //! Module layout:
 //!   config    – persistent app config, region helpers
@@ -422,7 +422,7 @@ pub fn run() {
                 let dictate_i = MenuItemBuilder::new("Start Dictation  ⌘⇧Space")
                     .id("dictate")
                     .build(app)?;
-                let open_studio_i = MenuItemBuilder::new("Open OmniVoice Studio")
+                let open_studio_i = MenuItemBuilder::new("Open MLACLabs")
                     .id("open_studio")
                     .build(app)?;
                 let quit_i = MenuItemBuilder::new("Quit Dictation")
@@ -437,7 +437,7 @@ pub fn run() {
                     .build()?
             } else {
                 // Studio mode: full tray
-                let show_i = MenuItemBuilder::new("Show OmniVoice")
+                let show_i = MenuItemBuilder::new("Show MLACLabs")
                     .id("show")
                     .build(app)?;
                 let dictate_i = MenuItemBuilder::new("Start Dictation  ⌘⇧Space")
@@ -449,7 +449,7 @@ pub fn run() {
                 let settings_i = MenuItemBuilder::new("Settings")
                     .id("settings")
                     .build(app)?;
-                let quit_i = MenuItemBuilder::new("Quit OmniVoice")
+                let quit_i = MenuItemBuilder::new("Quit MLACLabs")
                     .id("quit")
                     .build(app)?;
                 MenuBuilder::new(app)
@@ -467,7 +467,7 @@ pub fn run() {
             let tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&tray_menu)
-                .tooltip(if pill_mode_tray { "OmniVoice Dictation" } else { "OmniVoice Studio" })
+                .tooltip(if pill_mode_tray { "MLACLabs Dictation" } else { "MLACLabs" })
                 .on_menu_event(move |app, event| {
                     match event.id().as_ref() {
                         "show" => {
