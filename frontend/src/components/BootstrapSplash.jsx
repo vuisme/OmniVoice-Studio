@@ -94,9 +94,9 @@ function withTimeout(promise, ms) {
  *  The Windows form uses %LOCALAPPDATA% literally — Explorer expands it. */
 function defaultLogDirForPlatform() {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent || '' : '';
-  if (ua.includes('Windows')) return '%LOCALAPPDATA%\\MiloAnCutlabs\\Logs';
-  if (ua.includes('Mac')) return '~/Library/Logs/MiloAnCutlabs';
-  return '~/.local/state/MiloAnCutlabs';
+  if (ua.includes('Windows')) return '%LOCALAPPDATA%\\MLACLabs\\Logs';
+  if (ua.includes('Mac')) return '~/Library/Logs/MLACLabs';
+  return '~/.local/state/MLACLabs';
 }
 
 /** WebView2 profile cache path shown in the manual-repair fallback (#879). */
@@ -209,7 +209,7 @@ function JourneyRail({ t }) {
   return (
     <nav
       className="flex flex-wrap items-center gap-x-5 gap-y-2"
-      aria-label={t('bootstrap.title', 'MiloAnCutlabs')}
+      aria-label={t('bootstrap.title', 'MLACLabs')}
     >
       {stages.map(([label, state]) => (
         <span
@@ -566,7 +566,7 @@ export function BootstrapSplash({ stage, message }) {
           <div className="mt-2 flex flex-wrap items-end justify-between gap-6">
             <div className="min-w-0">
               <h1 className="m-0 font-serif text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-tight tracking-tight">
-                {t('bootstrap.title', 'MiloAnCutlabs')}
+                {t('bootstrap.title', 'MLACLabs')}
               </h1>
               <p className="mt-1.5 text-sm leading-snug text-fg-muted" aria-live="polite">
                 {label}

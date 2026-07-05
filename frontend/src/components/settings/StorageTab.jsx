@@ -51,7 +51,7 @@ export default function StorageTab() {
         icon={HardDrive}
         title={t('settings.storage', { defaultValue: 'Storage' })}
         description={t('settings.storage_desc', {
-          defaultValue: 'Where MiloAnCutlabs keeps your data and outputs.',
+          defaultValue: 'Where MLACLabs keeps your data and outputs.',
         })}
       >
         <Row

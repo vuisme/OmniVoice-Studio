@@ -60,7 +60,7 @@ def _download(path: str, dest: Path) -> bool:
     tmp = dest.with_suffix(dest.suffix + ".tmp")
     req = urllib.request.Request(
         _dataset_url(path),
-        headers={"User-Agent": "MiloAnCutlabs/voice-seed"},
+        headers={"User-Agent": "MLACLabs/voice-seed"},
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         tmp.write_bytes(resp.read())
@@ -71,7 +71,7 @@ def _download(path: str, dest: Path) -> bool:
 def _download_text(path: str) -> str:
     req = urllib.request.Request(
         _dataset_url(path),
-        headers={"User-Agent": "MiloAnCutlabs/voice-seed"},
+        headers={"User-Agent": "MLACLabs/voice-seed"},
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read().decode("utf-8", errors="replace").strip()

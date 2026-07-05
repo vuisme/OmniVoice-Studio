@@ -10,22 +10,22 @@ The bundled TTS model package (`pyproject.toml`) is versioned independently.
 
 ## [0.3.11] — 2026-07-05
 
-The MiloAnCutlabs desktop release — moves the packaged app identity to the MLAC bundle namespace, ships the Google sign-in protection and deployment fixes, seeds the Vietnamese preset voices, and includes the latest dubbing workflow repairs from the release branch.
+The MLACLabs desktop release — moves the packaged app identity to the MLAC bundle namespace, ships the Google sign-in protection and deployment fixes, seeds the Vietnamese preset voices, and includes the latest dubbing workflow repairs from the release branch.
 
 ### Added
 
-- Added Google sign-in protection, Docker environment loading, Vietnamese preset voice seeding, and the MiloAnCutlabs branding updates from the current release branch.
+- Added Google sign-in protection, Docker environment loading, Vietnamese preset voice seeding, and the MLACLabs branding updates from the current release branch.
 - **Backend crashes are now self-documenting.** When the local backend process dies (a native GPU abort, an out-of-memory kill), the app used to show only "Can't reach the backend" — undiagnosable without logs nobody sends. The launcher now records every unexpected backend death (exit code, how long it ran, the last 40 log lines), tells you honestly that it *crashed* and is restarting, offers a "View crash details" panel, attaches the evidence to in-app bug reports automatically (paths scrubbed), and stops silent crash-loops after 3 deaths in 10 minutes with the details on screen. Intentional shutdowns, restarts, and app quits are never misreported as crashes. (#969)
 - **"Generate N dubs" now actually translates each language first.** Multi-language generation used to synthesize every track from whatever text was in the editor — so at most one of your N dubs was really in its language. The batch now runs translate → generate per language with a visible "Translating → Bengali (2/3)…" phase, skips (and reports) any language whose translation fails instead of rendering a wrong-language track, and your multi-language picks and export-track selection are saved with the project instead of vanishing on tab switch. (#957)
 - **Switching dub languages no longer destroys your work — every track keeps its own text and audio.** Translations are now stored per language (switching the target swaps the editor text non-destructively; manual edits stay with their language), subtitles export each track's own text instead of N identical files, burned-in subs match their track, and the per-segment audio cache is keyed by language — "Regen changed" can no longer splice another language's audio into the track you're rebuilding, and staleness is tracked per track. Fully backward-compatible: existing projects and caches keep working; a pre-upgrade project's first "Regen changed" simply regenerates cleanly once. (#958)
 
 ### Changed
 
-- Rebranded the desktop application identifier to `com.mlac.omnivoice-studio` for MiloAnCutlabs builds.
+- Rebranded the desktop application identifier to `com.mlac.omnivoice-studio` for MLACLabs builds.
 
 ### Fixed
 
-- Fixed the sponsor logo accessibility label copy after the MiloAnCutlabs rename.
+- Fixed the sponsor logo accessibility label copy after the MLACLabs rename.
 - **Timeline segment boxes are visible on every WebView2 runtime.** The v0.3.10 flicker fix switched box colors to a newer CSS feature (`color-mix`) applied as an inline style — on WebView2 runtimes older than ~March 2023 (pinned enterprise/offline installs) that renders as *fully transparent*, turning "flickering boxes" into "no boxes at all" while looking perfect on up-to-date machines. Colors are now pre-blended in plain JavaScript to universally-supported `rgb()` values — pixel-identical on modern runtimes, theme-aware, and guarded by a test that fails if an engine-dependent color ever reaches the timeline again. (#968)
 - **Dubbed dialogue stops starting seconds early because of footsteps.** Dialogue starts are snapped to the first detected sound — and a single 20 ms burst (footsteps, a door, a sigh) counted as "speech", with no limit on how far a start could jump, and the snap even ran on the raw mix when vocal separation had failed. Onsets now require sustained speech-like energy, long jumps are only allowed across genuinely silent spans (so the original fix for whisper's stretched starts keeps working), and snapping turns off entirely when vocals weren't separated. Credit to the community reporter whose "footsteps theory" was exactly right. (#967)
 - **Completed dub tracks always show their video tabs.** Opening a project with a finished dubbed track hid the Original/track switcher until you re-selected the language — visibility was keyed to the language dropdown instead of the project's tracks, and restored projects couldn't set the language because the history database froze it at empty forever. Tabs now render from the tracks themselves, history keeps its language (existing projects heal without migration), restoring a project can no longer 404 the video preview, and track pills gained duration/timing tooltips plus an accurate now-playing indicator. (#956)

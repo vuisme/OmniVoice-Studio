@@ -267,7 +267,7 @@ export default function SetupWizard({ onReady }) {
                 className="m-0 font-serif text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-tight tracking-tight"
                 data-tauri-drag-region
               >
-                MiloAnCutlabs
+                MLACLabs
               </h1>
               <p className="mt-1.5 text-sm leading-snug text-fg-muted" data-tauri-drag-region>
                 {STEP_SUBTITLES[step]}

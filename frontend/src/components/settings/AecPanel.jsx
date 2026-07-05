@@ -22,14 +22,14 @@ export default function AecPanel() {
     <SettingsSection
       icon={Volume2}
       title="Dictate while audio plays"
-      description="Cancel MiloAnCutlabs' own playback out of the microphone."
+      description="Cancel MLACLabs' own playback out of the microphone."
     >
       <SettingRow
         title="Enable echo cancellation for dictation"
         subtitle="experimental"
         hint={
           <>
-            Cancels MiloAnCutlabs' own playback out of the microphone so you can dictate while a
+            Cancels MLACLabs' own playback out of the microphone so you can dictate while a
             preview, dub, or video is playing — without the transcript picking up what the app is
             saying. Adds a small amount of audio processing; leave it off if you never dictate over
             playback.

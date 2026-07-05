@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "MiloAnCutlabs",
+  "productName": "MLACLabs",
   "version": "../package.json",
   "identifier": "com.mlac.omnivoice-studio",
   "build": {
@@ -15,7 +15,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-      "title": "MiloAnCutlabs",
+      "title": "MLACLabs",
         "width": 1920,
         "height": 1080,
         "minWidth": 900,

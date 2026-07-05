@@ -147,7 +147,7 @@ def _denied(title: str, body: str) -> HTMLResponse:
         f"""<!doctype html>
 <html><head><meta charset="utf-8"><title>Access denied</title></head>
 <body style="font-family:system-ui;margin:48px;line-height:1.5">
-<h1>{title}</h1><p>{body}</p><p><a href="/">Back to MiloAnCutlabs</a></p>
+<h1>{title}</h1><p>{body}</p><p><a href="/">Back to MLACLabs</a></p>
 </body></html>""",
         status_code=403,
     )

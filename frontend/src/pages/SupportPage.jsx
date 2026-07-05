@@ -121,7 +121,7 @@ function SponsorLogo({ sponsor }) {
       }}
       title={sponsor.name}
       aria-label={t('support.sponsors_logo_aria', {
-        defaultValue: 'Visit {{name}}, a MiloAnCutlabs sponsor',
+        defaultValue: 'Visit {{name}}, a MLACLabs sponsor',
         name: sponsor.name,
       })}
       className="flex min-h-[64px] items-center justify-center rounded-md border border-border bg-transparent px-4 py-3 transition-colors hover:border-transparent hover:bg-[var(--chrome-hover-bg)]"
@@ -154,7 +154,7 @@ function SponsorsSection() {
       <p className="mb-3.5 font-sans text-[0.75rem] leading-[1.6] text-[var(--chrome-fg-muted)]">
         {t('support.sponsors_lead', {
           defaultValue:
-            'The companies and people keeping MiloAnCutlabs free, local, and open source.',
+            'The companies and people keeping MLACLabs free, local, and open source.',
         })}
       </p>
 
@@ -169,7 +169,7 @@ function SponsorsSection() {
           </span>
           <span className="font-serif text-[1.05rem] text-[var(--chrome-fg)]">
             {t('support.sponsors_empty_title', {
-              defaultValue: 'Be the first to sponsor MiloAnCutlabs',
+              defaultValue: 'Be the first to sponsor MLACLabs',
             })}
           </span>
           <span className="font-mono text-[0.68rem] uppercase tracking-[var(--chrome-label-track)] text-[var(--chrome-fg-dim)]">
@@ -391,8 +391,8 @@ function SupportView() {
 /* ── Commercial License panel ─────────────────────────────────────────── */
 const LICENSE_EMAIL = 'OmniVoice@palash.dev';
 const LICENSE_MAILTO =
-  'mailto:OmniVoice@palash.dev?subject=MiloAnCutlabs Commercial License Inquiry' +
-  '&body=Hi Palash,%0A%0AI%27d like to talk about a commercial license for MiloAnCutlabs.%0A%0AOrganization:%0ATeam size:%0AUse case:%0A';
+  'mailto:OmniVoice@palash.dev?subject=MLACLabs Commercial License Inquiry' +
+  '&body=Hi Palash,%0A%0AI%27d like to talk about a commercial license for MLACLabs.%0A%0AOrganization:%0ATeam size:%0AUse case:%0A';
 
 function LicenseView() {
   const { t } = useTranslation();
@@ -421,7 +421,7 @@ function LicenseView() {
         <p className="mx-auto mt-4 max-w-[540px] font-sans text-[0.85rem] leading-[1.65] text-[var(--chrome-fg-muted)]">
           {t('enterprise.hero_simple', {
             defaultValue:
-              'MiloAnCutlabs is free and open-source under the AGPL-3.0 — including for commercial and internal business use. You only need a commercial license to embed it in a closed-source product without AGPL’s copyleft obligations.',
+              'MLACLabs is free and open-source under the AGPL-3.0 — including for commercial and internal business use. You only need a commercial license to embed it in a closed-source product without AGPL’s copyleft obligations.',
           })}
         </p>
       </div>

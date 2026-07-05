@@ -70,10 +70,10 @@ describe.skip('LogsFooter donation-moment popover', () => {
     // Line 1 copy (en), Ko-fi + PayPal CTAs, Later, and the quiet opt-out.
     expect(screen.getByText(/100% local/)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Support MiloAnCutlabs on Ko-fi' }),
+      screen.getByRole('button', { name: 'Support MLACLabs on Ko-fi' }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Support MiloAnCutlabs via PayPal' }),
+      screen.getByRole('button', { name: 'Support MLACLabs via PayPal' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Later' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: "Don't ask again" })).toBeInTheDocument();
@@ -120,12 +120,12 @@ describe.skip('LogsFooter donation-moment popover', () => {
   it('Ko-fi / PayPal CTAs open the existing donate links and dismiss', () => {
     render(<LogsFooter />);
     fireMoment(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Support MiloAnCutlabs on Ko-fi' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Support MLACLabs on Ko-fi' }));
     expect(openExternal).toHaveBeenCalledWith(KOFI_URL);
     expect(popover()).toBeNull();
 
     fireMoment(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Support MiloAnCutlabs via PayPal' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Support MLACLabs via PayPal' }));
     expect(openExternal).toHaveBeenCalledWith(PAYPAL_URL);
     expect(popover()).toBeNull();
   });

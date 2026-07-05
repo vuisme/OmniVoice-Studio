@@ -89,7 +89,7 @@ const SECTIONS = [
     titleDefault: 'Support the project',
     descKey: 'contact.support_desc',
     descDefault:
-      'MiloAnCutlabs is free and runs entirely on your machine. If it saves you time, a one-off tip keeps development going — every bit genuinely helps.',
+      'MLACLabs is free and runs entirely on your machine. If it saves you time, a one-off tip keeps development going — every bit genuinely helps.',
     ctaKey: 'contact.support_cta',
     ctaDefault: 'See ways to support',
   },
@@ -211,7 +211,7 @@ export default function ContactPage({ onBack }) {
           <p className="mx-auto mt-4 max-w-[560px] font-sans text-[0.9rem] leading-[1.7] text-[var(--chrome-fg-muted)]">
             {t('contact.hero_desc', {
               defaultValue:
-                'MiloAnCutlabs is built in the open and shaped by the people who use it. Whether you’ve found a bug, have a feature in mind, need a hand getting set up, or just want to share what you made — there’s a channel below for it.',
+                'MLACLabs is built in the open and shaped by the people who use it. Whether you’ve found a bug, have a feature in mind, need a hand getting set up, or just want to share what you made — there’s a channel below for it.',
             })}
           </p>
         </header>
