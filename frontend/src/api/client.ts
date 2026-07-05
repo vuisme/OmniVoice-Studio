@@ -173,7 +173,7 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<Re
           /* no window (tests) — the ApiError below still tells the story */
         }
         throw new ApiError(
-        `The local MLACLabs backend crashed (${describeCrashExit(crash)}) ${crashAge(crash)} ago ` +
+          `The local MLACLabs backend crashed (${describeCrashExit(crash)}) ${crashAge(crash)} ago ` +
             'and is being restarted — this request could not reach it. ' +
             'Open the crash notice for the error output, or check Settings → Logs → Backend.',
           { status: 0, detail: lastDetail },

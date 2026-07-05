@@ -85,8 +85,8 @@ export default function MCPBindingsPanel() {
           title={b.label || b.client_id}
           hint={
             <>
-              Agents reach MLACLabs at <code>/mcp</code>. Bind an agent's client id to a voice
-              so it speaks in that profile. See <code>docs/mcp.md</code>.
+              Agents reach MLACLabs at <code>/mcp</code>. Bind an agent's client id to a voice so it
+              speaks in that profile. See <code>docs/mcp.md</code>.
             </>
           }
           control={
