@@ -2,6 +2,7 @@
 # Guards against accidental endpoint removal/rename (tests/test_api_route_inventory.py).
 DELETE /api/mcp/bindings/{client_id}
 DELETE /api/settings/hf-token
+DELETE /auth/users/{email}
 DELETE /batch/jobs/{job_id}
 DELETE /dub/history
 DELETE /dub/history/{history_id}
@@ -36,6 +37,10 @@ GET /archetypes/categories
 GET /archetypes/{archetype_id}
 GET /archetypes/{archetype_id}/preview
 GET /audiobook/jobs
+GET /auth/google/callback
+GET /auth/google/login
+GET /auth/status
+GET /auth/users
 GET /batch/download/{job_id}/{lang}
 GET /batch/jobs
 GET /batch/jobs/{job_id}
@@ -137,6 +142,8 @@ POST /audiobook/import
 POST /audiobook/plan
 POST /audiobook/preview
 POST /audiobook/resume/{job_id}
+POST /auth/logout
+POST /auth/users
 POST /batch/enqueue
 POST /batch/jobs/{job_id}/cancel
 POST /clean-audio
