@@ -32,9 +32,9 @@ def test_sanitize_strips_home_and_secrets():
 
 
 def test_detect_repo_from_origin():
-    # This repo's origin is github.com/debpalash/OmniVoice-Studio.
+    # This fork's origin is github.com/vuisme/OmniVoice-Studio.
     repo = T.detect_repo()
-    assert repo == ("debpalash", "OmniVoice-Studio")
+    assert repo == ("vuisme", "OmniVoice-Studio")
 
 
 def test_clustering_dedupes_and_excludes_nonblocking():
@@ -55,9 +55,9 @@ def test_build_issue_title_and_table():
 
 def test_triage_builds_github_url():
     res = T.triage(_failing_report())
-    assert res.owner == "debpalash" and res.repo == "OmniVoice-Studio"
+    assert res.owner == "vuisme" and res.repo == "OmniVoice-Studio"
     assert res.url and res.url.startswith(
-        "https://github.com/debpalash/OmniVoice-Studio/issues/new?"
+        "https://github.com/vuisme/OmniVoice-Studio/issues/new?"
     )
     q = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).query)
     assert q["title"][0] == res.title

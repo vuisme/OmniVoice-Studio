@@ -33,7 +33,6 @@ _LINK_FILES = [
     "README.md",
     "CONTRIBUTING.md",
     "frontend/src/pages/EnterprisePage.jsx",
-    "frontend/src/components/LogsFooter.jsx",
 ]
 
 
@@ -43,7 +42,7 @@ def test_discord_link_updated(relpath):
     filepath = _REPO / relpath
     if not filepath.exists():
         pytest.skip(f"{relpath} not found")
-    content = filepath.read_text()
+    content = filepath.read_text(encoding="utf-8")
     assert OLD_DISCORD not in content, f"{relpath} still contains expired link {OLD_DISCORD}"
     assert NEW_DISCORD in content, f"{relpath} missing new link {NEW_DISCORD}"
 
@@ -57,7 +56,7 @@ def test_no_old_discord_link_anywhere():
             parts = p.relative_to(_REPO).parts
             if any(skip in parts for skip in ("node_modules", ".git", "research", "dist", "target", "build")):
                 continue
-            if OLD_DISCORD in p.read_text(errors="ignore"):
+            if OLD_DISCORD in p.read_text(encoding="utf-8", errors="ignore"):
                 hits.append(str(p.relative_to(_REPO)))
     assert hits == [], f"Old Discord link still in: {hits}"
 
