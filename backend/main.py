@@ -155,6 +155,16 @@ from logging.handlers import RotatingFileHandler
 # written to prefs.json so they survive backend restarts. Read them back
 # here — before any user code reads os.environ — so the values are available
 # from startup.
+#
+# Legacy (≤v0.3.7) Translation-LLM rows (env.TRANSLATE_*) must migrate into
+# the custom LLM provider's settings store BEFORE the re-import below — once
+# TRANSLATE_BASE_URL lands in os.environ it hijacks the LLM provider
+# selection for the whole session (#963). Real env vars are untouched.
+try:
+    from services.llm_providers import migrate_legacy_translate_prefs
+    migrate_legacy_translate_prefs()
+except Exception:
+    pass  # never block startup on the migration; it retries next launch
 _PERSISTED_ENV_PREFIX = "env."
 try:
     from core.prefs import _load as _load_all_prefs
@@ -729,13 +739,14 @@ async def global_exception_handler(request: Request, exc: Exception):
     # #874: a model download that failed because the CONFIGURED Hugging Face
     # mirror (HF_ENDPOINT) is unreachable used to leak the raw transformers
     # message ("We couldn't connect to 'https://hf-mirror.com' …") as the 500
-    # detail with no next step. Appending the shared mirror hint HERE covers
-    # every route that can leak a model-load/download error (generate, dub,
-    # archetypes, …), not just TTS generate. append_hf_mirror_hint is a no-op
-    # for every other error and never raises.
-    from core.failure import append_hf_mirror_hint
+    # detail with no next step. #959: same story for the SOCKS-proxy class
+    # ("Using SOCKS proxy, but the 'socksio' package is not installed").
+    # Appending the shared hints HERE covers every route that can leak a
+    # model-load/download error (generate, dub, archetypes, …), not just TTS
+    # generate. append_hint is a no-op for every other error and never raises.
+    from core.failure import append_hint
     return JSONResponse(
-        {"detail": append_hf_mirror_hint(str(exc)), "error_class": _entry.get("error_class")},
+        {"detail": append_hint(str(exc)), "error_class": _entry.get("error_class")},
         status_code=500,
         headers=headers,
     )
