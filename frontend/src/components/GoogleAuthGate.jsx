@@ -34,8 +34,7 @@ export default function GoogleAuthGate({ children }) {
 
   useEffect(() => {
     loadStatus();
-    const onRequired = () =>
-      setState((prev) => ({ ...prev, enabled: true, authenticated: false }));
+    const onRequired = () => setState((prev) => ({ ...prev, enabled: true, authenticated: false }));
     window.addEventListener('mlac:login-required', onRequired);
     return () => window.removeEventListener('mlac:login-required', onRequired);
   }, []);
@@ -63,8 +62,7 @@ export default function GoogleAuthGate({ children }) {
         <h2>{t('auth.title', { defaultValue: 'Sign in required' })}</h2>
         <p>
           {t('auth.body', {
-            defaultValue:
-              'Use a Google account that has been added to the activation list.',
+            defaultValue: 'Use a Google account that has been added to the activation list.',
           })}
         </p>
         {state.error ? <p role="alert">{state.error}</p> : null}

@@ -30,11 +30,7 @@ function LabelWithHint({ children, hint, helpLabel }) {
       <span className="truncate">{children}</span>
       <Tooltip
         placement="top"
-        content={
-          <span className="block max-w-[260px] text-[11px] leading-[1.45]">
-            {hint}
-          </span>
-        }
+        content={<span className="block max-w-[260px] text-[11px] leading-[1.45]">{hint}</span>}
       >
         <button
           type="button"
@@ -94,7 +90,12 @@ export default function ActionBar({
           <div className="grid [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))] gap-[6px] max-[500px]:grid-cols-2">
             <div>
               <div className="label-row justify-between">
-                <LabelWithHint hint={t(PARAM_HINT_KEYS.cfg)} helpLabel={t('clone.param_hint_aria', { label: 'CFG' })}>CFG</LabelWithHint>
+                <LabelWithHint
+                  hint={t(PARAM_HINT_KEYS.cfg)}
+                  helpLabel={t('clone.param_hint_aria', { label: 'CFG' })}
+                >
+                  CFG
+                </LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {cfg}
                 </span>
@@ -110,7 +111,12 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <LabelWithHint hint={t(PARAM_HINT_KEYS.speed)} helpLabel={t('clone.param_hint_aria', { label: t('clone.speed') })}>{t('clone.speed')}</LabelWithHint>
+                <LabelWithHint
+                  hint={t(PARAM_HINT_KEYS.speed)}
+                  helpLabel={t('clone.param_hint_aria', { label: t('clone.speed') })}
+                >
+                  {t('clone.speed')}
+                </LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {speed}x
                 </span>
@@ -126,7 +132,12 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <LabelWithHint hint={t(PARAM_HINT_KEYS.tShift)} helpLabel={t('clone.param_hint_aria', { label: t('clone.tshift') })}>{t('clone.tshift')}</LabelWithHint>
+                <LabelWithHint
+                  hint={t(PARAM_HINT_KEYS.tShift)}
+                  helpLabel={t('clone.param_hint_aria', { label: t('clone.tshift') })}
+                >
+                  {t('clone.tshift')}
+                </LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {tShift}
                 </span>
@@ -142,7 +153,12 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <LabelWithHint hint={t(PARAM_HINT_KEYS.posTemp)} helpLabel={t('clone.param_hint_aria', { label: t('clone.pos_temp') })}>{t('clone.pos_temp')}</LabelWithHint>
+                <LabelWithHint
+                  hint={t(PARAM_HINT_KEYS.posTemp)}
+                  helpLabel={t('clone.param_hint_aria', { label: t('clone.pos_temp') })}
+                >
+                  {t('clone.pos_temp')}
+                </LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {posTemp}
                 </span>
@@ -158,7 +174,12 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <LabelWithHint hint={t(PARAM_HINT_KEYS.classTemp)} helpLabel={t('clone.param_hint_aria', { label: t('clone.class_temp') })}>{t('clone.class_temp')}</LabelWithHint>
+                <LabelWithHint
+                  hint={t(PARAM_HINT_KEYS.classTemp)}
+                  helpLabel={t('clone.param_hint_aria', { label: t('clone.class_temp') })}
+                >
+                  {t('clone.class_temp')}
+                </LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {classTemp}
                 </span>
@@ -174,7 +195,12 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <LabelWithHint hint={t(PARAM_HINT_KEYS.layerPenalty)} helpLabel={t('clone.param_hint_aria', { label: t('clone.layer_pen') })}>{t('clone.layer_pen')}</LabelWithHint>
+                <LabelWithHint
+                  hint={t(PARAM_HINT_KEYS.layerPenalty)}
+                  helpLabel={t('clone.param_hint_aria', { label: t('clone.layer_pen') })}
+                >
+                  {t('clone.layer_pen')}
+                </LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {layerPenalty}
                 </span>
@@ -190,7 +216,12 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row">
-                <LabelWithHint hint={t(PARAM_HINT_KEYS.duration)} helpLabel={t('clone.param_hint_aria', { label: t('clone.duration') })}>{t('clone.duration')}</LabelWithHint>
+                <LabelWithHint
+                  hint={t(PARAM_HINT_KEYS.duration)}
+                  helpLabel={t('clone.param_hint_aria', { label: t('clone.duration') })}
+                >
+                  {t('clone.duration')}
+                </LabelWithHint>
               </div>
               <input
                 type="text"

@@ -120,7 +120,11 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<Re
   if (pin) extra['X-OmniVoice-Pin'] = pin;
   if (key) extra['Authorization'] = `Bearer ${key}`;
   const finalOpts: RequestInit = Object.keys(extra).length
-    ? { ...opts, credentials: opts.credentials || 'include', headers: { ...(opts.headers as Record<string, string>), ...extra } }
+    ? {
+        ...opts,
+        credentials: opts.credentials || 'include',
+        headers: { ...(opts.headers as Record<string, string>), ...extra },
+      }
     : { ...opts, credentials: opts.credentials || 'include' };
   const signal = finalOpts.signal as AbortSignal | null | undefined;
   let lastDetail = '';

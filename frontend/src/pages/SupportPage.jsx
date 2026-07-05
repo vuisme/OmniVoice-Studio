@@ -153,7 +153,8 @@ function SponsorsSection() {
       <SectionTitle>{t('support.sponsors_title', { defaultValue: 'Sponsors' })}</SectionTitle>
       <p className="mb-3.5 font-sans text-[0.75rem] leading-[1.6] text-[var(--chrome-fg-muted)]">
         {t('support.sponsors_lead', {
-          defaultValue: 'The companies and people keeping MiloAnCutlabs free, local, and open source.',
+          defaultValue:
+            'The companies and people keeping MiloAnCutlabs free, local, and open source.',
         })}
       </p>
 

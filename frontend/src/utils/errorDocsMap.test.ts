@@ -97,9 +97,7 @@ describe('errorDocsMap', () => {
     // Issue #72: macOS reports "app is damaged" in English and "已损坏" in
     // localized Chinese builds — both should land on the same docs page.
     expect(classifyError(new Error('MiloAnCutlabs is damaged'))).toBe('GATEKEEPER_QUARANTINE');
-    expect(classifyError(new Error('MiloAnCutlabs已损坏，无法打开'))).toBe(
-      'GATEKEEPER_QUARANTINE',
-    );
+    expect(classifyError(new Error('MiloAnCutlabs已损坏，无法打开'))).toBe('GATEKEEPER_QUARANTINE');
   });
 
   it('classifyError returns null on unknown messages', () => {

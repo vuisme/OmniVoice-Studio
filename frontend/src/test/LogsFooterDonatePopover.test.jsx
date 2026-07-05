@@ -69,7 +69,9 @@ describe.skip('LogsFooter donation-moment popover', () => {
     expect(popover()).toBeInTheDocument();
     // Line 1 copy (en), Ko-fi + PayPal CTAs, Later, and the quiet opt-out.
     expect(screen.getByText(/100% local/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Support MiloAnCutlabs on Ko-fi' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Support MiloAnCutlabs on Ko-fi' }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Support MiloAnCutlabs via PayPal' }),
     ).toBeInTheDocument();
