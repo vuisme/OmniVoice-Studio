@@ -8,13 +8,23 @@ The bundled TTS model package (`pyproject.toml`) is versioned independently.
 
 ## [Unreleased]
 
+## [0.3.11] — 2026-07-05
+
+The MiloAnCutlabs desktop release — moves the packaged app identity to the MLAC bundle namespace, ships the Google sign-in protection and deployment fixes, seeds the Vietnamese preset voices, and includes the latest dubbing workflow repairs from the release branch.
+
 ### Added
 
+- Added Google sign-in protection, Docker environment loading, Vietnamese preset voice seeding, and the MiloAnCutlabs branding updates from the current release branch.
 - **"Generate N dubs" now actually translates each language first.** Multi-language generation used to synthesize every track from whatever text was in the editor — so at most one of your N dubs was really in its language. The batch now runs translate → generate per language with a visible "Translating → Bengali (2/3)…" phase, skips (and reports) any language whose translation fails instead of rendering a wrong-language track, and your multi-language picks and export-track selection are saved with the project instead of vanishing on tab switch. (#957)
 - **Switching dub languages no longer destroys your work — every track keeps its own text and audio.** Translations are now stored per language (switching the target swaps the editor text non-destructively; manual edits stay with their language), subtitles export each track's own text instead of N identical files, burned-in subs match their track, and the per-segment audio cache is keyed by language — "Regen changed" can no longer splice another language's audio into the track you're rebuilding, and staleness is tracked per track. Fully backward-compatible: existing projects and caches keep working; a pre-upgrade project's first "Regen changed" simply regenerates cleanly once. (#958)
 
+### Changed
+
+- Rebranded the desktop application identifier to `com.mlac.omnivoice-studio` for MiloAnCutlabs builds.
+
 ### Fixed
 
+- Fixed the sponsor logo accessibility label copy after the MiloAnCutlabs rename.
 - **Completed dub tracks always show their video tabs.** Opening a project with a finished dubbed track hid the Original/track switcher until you re-selected the language — visibility was keyed to the language dropdown instead of the project's tracks, and restored projects couldn't set the language because the history database froze it at empty forever. Tabs now render from the tracks themselves, history keeps its language (existing projects heal without migration), restoring a project can no longer 404 the video preview, and track pills gained duration/timing tooltips plus an accurate now-playing indicator. (#956)
 
 ## [0.3.10] — 2026-07-05
