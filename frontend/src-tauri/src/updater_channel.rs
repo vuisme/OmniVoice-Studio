@@ -19,9 +19,9 @@ use tauri::{AppHandle, Emitter};
 use tauri_plugin_updater::{Update, Updater, UpdaterExt};
 
 const STABLE_MANIFEST: &str =
-    "https://github.com/debpalash/OmniVoice-Studio/releases/latest/download/latest.json";
+    "https://github.com/vuisme/OmniVoice-Studio/releases/latest/download/latest.json";
 const PREVIEW_MANIFEST: &str =
-    "https://github.com/debpalash/OmniVoice-Studio/releases/download/preview/latest.json";
+    "https://github.com/vuisme/OmniVoice-Studio/releases/download/preview/latest.json";
 
 /// Cross-channel ordering of OmniVoice build versions (#326).
 ///
@@ -189,7 +189,7 @@ pub async fn install_update(app: AppHandle, channel: String) -> Result<(), Strin
 // ── GitHub releases (changelog/history panel) ─────────────────────────────
 
 const RELEASES_API: &str =
-    "https://api.github.com/repos/debpalash/OmniVoice-Studio/releases?per_page=30";
+    "https://api.github.com/repos/vuisme/OmniVoice-Studio/releases?per_page=30";
 
 #[derive(Serialize)]
 pub struct ReleaseInfo {

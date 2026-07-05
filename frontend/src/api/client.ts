@@ -120,8 +120,8 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<Re
   if (pin) extra['X-OmniVoice-Pin'] = pin;
   if (key) extra['Authorization'] = `Bearer ${key}`;
   const finalOpts: RequestInit = Object.keys(extra).length
-    ? { ...opts, headers: { ...(opts.headers as Record<string, string>), ...extra } }
-    : opts;
+    ? { ...opts, credentials: opts.credentials || 'include', headers: { ...(opts.headers as Record<string, string>), ...extra } }
+    : { ...opts, credentials: opts.credentials || 'include' };
   const signal = finalOpts.signal as AbortSignal | null | undefined;
   let lastDetail = '';
   for (let attempt = 0; ; attempt++) {
@@ -144,7 +144,7 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<Re
         continue;
       }
       throw new ApiError(
-        "Can't reach the local OmniVoice backend — it may still be starting up, or it stopped. " +
+        "Can't reach the local MiloAnCutlabs backend — it may still be starting up, or it stopped. " +
           'Wait a few seconds and try again; if it persists, restart the app (or check Settings → Logs → Backend).',
         { status: 0, detail: lastDetail },
       );
@@ -153,7 +153,16 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<Re
       // 401 from the LAN PIN middleware on a remote device → surface the gate.
       // An HTTP error means the backend *did* respond — never retry it.
       if (res.status === 401 && typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('ov:pin-required'));
+        const detail = await readError(res);
+        if (String(detail).toLowerCase().includes('login required')) {
+          window.dispatchEvent(new Event('mlac:login-required'));
+        } else {
+          window.dispatchEvent(new Event('ov:pin-required'));
+        }
+        throw new ApiError(`${res.status} ${res.statusText}: ${detail}`, {
+          status: res.status,
+          detail,
+        });
       }
       const detail = await readError(res);
       throw new ApiError(`${res.status} ${res.statusText}: ${detail}`, {

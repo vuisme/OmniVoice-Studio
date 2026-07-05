@@ -175,6 +175,21 @@ _BASE_SCHEMA = """
         created_at REAL
     );
     CREATE INDEX IF NOT EXISTS idx_pron_lang ON pronunciation_entries(language);
+
+    -- Google login access list. When Google auth is enabled, only rows with
+    -- active=1 can use the app; admin=1 can manage the list through /auth/users.
+    CREATE TABLE IF NOT EXISTS auth_users (
+        email TEXT PRIMARY KEY,
+        active INTEGER NOT NULL DEFAULT 0,
+        admin INTEGER NOT NULL DEFAULT 0,
+        name TEXT DEFAULT '',
+        picture TEXT DEFAULT '',
+        google_sub TEXT DEFAULT '',
+        last_login_at REAL,
+        created_at REAL NOT NULL,
+        updated_at REAL NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_auth_users_active ON auth_users(active);
 """
 
 # Only tables/columns this module is allowed to ALTER. Prevents SQL injection via

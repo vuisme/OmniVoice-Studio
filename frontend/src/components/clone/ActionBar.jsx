@@ -6,12 +6,48 @@ import {
   ChevronDown,
   Play,
   Square,
+  CircleHelp,
 } from 'lucide-react';
-import { Button, Progress } from '../../ui';
+import { Button, Progress, Tooltip } from '../../ui';
 import SearchableSelect from '../SearchableSelect';
 import ALL_LANGUAGES from '../../languages.json';
 import { POPULAR_LANGS } from '../../utils/constants';
 import { stopActivePlayback } from '../../utils/playback';
+
+const PARAM_HINT_KEYS = {
+  cfg: 'clone.cfg_hint',
+  speed: 'clone.speed_hint',
+  tShift: 'clone.tshift_hint',
+  posTemp: 'clone.pos_temp_hint',
+  classTemp: 'clone.class_temp_hint',
+  layerPenalty: 'clone.layer_pen_hint',
+  duration: 'clone.duration_hint',
+};
+
+function LabelWithHint({ children, hint, helpLabel }) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-[4px]">
+      <span className="truncate">{children}</span>
+      <Tooltip
+        placement="top"
+        content={
+          <span className="block max-w-[260px] text-[11px] leading-[1.45]">
+            {hint}
+          </span>
+        }
+      >
+        <button
+          type="button"
+          className="inline-flex h-[14px] w-[14px] flex-none items-center justify-center rounded-full border-0 bg-transparent p-0 text-[color:var(--chrome-fg-dim)] cursor-help transition-colors duration-[120ms] hover:text-[color:var(--chrome-fg-muted)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          aria-label={helpLabel}
+          onClick={(e) => e.preventDefault()}
+        >
+          <CircleHelp size={12} aria-hidden="true" />
+        </button>
+      </Tooltip>
+    </span>
+  );
+}
 
 export default function ActionBar({
   t,
@@ -58,7 +94,7 @@ export default function ActionBar({
           <div className="grid [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))] gap-[6px] max-[500px]:grid-cols-2">
             <div>
               <div className="label-row justify-between">
-                <span>CFG</span>
+                <LabelWithHint hint={t(PARAM_HINT_KEYS.cfg)} helpLabel={t('clone.param_hint_aria', { label: 'CFG' })}>CFG</LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {cfg}
                 </span>
@@ -74,7 +110,7 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <span>{t('clone.speed')}</span>
+                <LabelWithHint hint={t(PARAM_HINT_KEYS.speed)} helpLabel={t('clone.param_hint_aria', { label: t('clone.speed') })}>{t('clone.speed')}</LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {speed}x
                 </span>
@@ -90,7 +126,7 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <span>{t('clone.tshift')}</span>
+                <LabelWithHint hint={t(PARAM_HINT_KEYS.tShift)} helpLabel={t('clone.param_hint_aria', { label: t('clone.tshift') })}>{t('clone.tshift')}</LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {tShift}
                 </span>
@@ -106,7 +142,7 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <span>{t('clone.pos_temp')}</span>
+                <LabelWithHint hint={t(PARAM_HINT_KEYS.posTemp)} helpLabel={t('clone.param_hint_aria', { label: t('clone.pos_temp') })}>{t('clone.pos_temp')}</LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {posTemp}
                 </span>
@@ -122,7 +158,7 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <span>{t('clone.class_temp')}</span>
+                <LabelWithHint hint={t(PARAM_HINT_KEYS.classTemp)} helpLabel={t('clone.param_hint_aria', { label: t('clone.class_temp') })}>{t('clone.class_temp')}</LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {classTemp}
                 </span>
@@ -138,7 +174,7 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row justify-between">
-                <span>{t('clone.layer_pen')}</span>
+                <LabelWithHint hint={t(PARAM_HINT_KEYS.layerPenalty)} helpLabel={t('clone.param_hint_aria', { label: t('clone.layer_pen') })}>{t('clone.layer_pen')}</LabelWithHint>
                 <span className="text-[0.65rem] bg-black/35 px-[5px] py-px rounded-[3px] [border:1px_solid_rgba(255,255,255,0.04)] [font-variant-numeric:tabular-nums]">
                   {layerPenalty}
                 </span>
@@ -154,7 +190,7 @@ export default function ActionBar({
             </div>
             <div>
               <div className="label-row">
-                <span>{t('clone.duration')}</span>
+                <LabelWithHint hint={t(PARAM_HINT_KEYS.duration)} helpLabel={t('clone.param_hint_aria', { label: t('clone.duration') })}>{t('clone.duration')}</LabelWithHint>
               </div>
               <input
                 type="text"

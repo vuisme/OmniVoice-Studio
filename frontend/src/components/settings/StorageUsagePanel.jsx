@@ -42,7 +42,7 @@ function warningText(t, w) {
   if (w.kind === 'low_disk' && w.severity === 'critical') {
     return t('settings.storage_warn_critical', {
       defaultValue:
-        'Critically low disk space: {{free}} GB free on {{path}} — OmniVoice needs at least {{min}} GB. Generation and model downloads may fail.',
+        'Critically low disk space: {{free}} GB free on {{path}} — MiloAnCutlabs needs at least {{min}} GB. Generation and model downloads may fail.',
       ...vars,
     });
   }
@@ -213,7 +213,7 @@ export default function StorageUsagePanel() {
       icon={HardDrive}
       title={t('settings.storage_usage', { defaultValue: 'Disk usage' })}
       description={t('settings.storage_usage_desc', {
-        defaultValue: 'What OmniVoice stores on this machine, and how much space is left.',
+        defaultValue: 'What MiloAnCutlabs stores on this machine, and how much space is left.',
       })}
       actions={
         <SmallButton

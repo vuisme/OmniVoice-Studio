@@ -82,7 +82,7 @@ export default function OpenApiPanel() {
       icon={Braces}
       title={t('openapi.title', { defaultValue: 'OpenAPI Reference' })}
       description={t('openapi.description', {
-        defaultValue: "Interactive reference for OmniVoice's local backend API.",
+        defaultValue: "Interactive reference for MiloAnCutlabs' local backend API.",
       })}
     >
       {/* Spec URL + copy / open-raw affordances — useful whether the embed

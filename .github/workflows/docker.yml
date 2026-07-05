@@ -14,7 +14,7 @@
 #   :0.3      — major.minor floating tag (updated on every patch within the minor)
 #   :sha-xxxx — specific commit SHA; produced by workflow_dispatch
 #
-# Images land at: ghcr.io/debpalash/omnivoice-studio AND docker.io/palashdeb/omnivoice-studio
+# Images land at: ghcr.io/vuisme/OmniVoice-Studio AND docker.io/cpanel10x/omnivoice-studio
 # (Docker Hub push gated on the DOCKERHUB_USERNAME/DOCKERHUB_TOKEN secrets;
 # if unset the build still pushes to GHCR.)
 #
@@ -41,7 +41,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  DOCKERHUB_IMAGE: palashdeb/omnivoice-studio
+  DOCKERHUB_IMAGE: cpanel10x/omnivoice-studio
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:

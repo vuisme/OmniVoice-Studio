@@ -347,6 +347,7 @@ from api.routers import (
     longform_jobs,
     pronunciation,  # Expressive-TTS Spec 01: user pronunciation dictionary
     settings as settings_router,  # Phase 1 AUTH-03: HF token save/clear/state
+    auth,
 )
 from utils import hf_progress
 
@@ -498,6 +499,11 @@ async def lifespan(app: FastAPI):
         pass
 
     init_db()
+    try:
+        from services.auth_service import seed_auth_users_from_env
+        seed_auth_users_from_env()
+    except Exception:
+        logger.exception("Auth user seed failed (non-fatal).")
     # Network sharing is loopback-only by default; the PIN middleware stays
     # inert until enable() sets a PIN. Seed the (disabled) state so the
     # middleware and /system/network/state always have something to read.
@@ -732,6 +738,56 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 _LOOPBACK_CLIENTS = {"127.0.0.1", "::1"}
 _SHELL_PATHS = {"/", "/index.html", "/favicon.ico", "/health"}
+_AUTH_PUBLIC_PREFIXES = ("/auth/",)
+_STATIC_PUBLIC_PREFIXES = ("/assets/", "/favicon")
+
+
+class GoogleAuthMiddleware:
+    """Optional Google-login gate.
+
+    Inert unless auth_service.auth_enabled() is true. When enabled, the SPA
+    shell and /auth endpoints stay public so the login screen can load, while
+    all API and WebSocket routes require a valid signed session cookie.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] not in ("http", "websocket"):
+            return await self.app(scope, receive, send)
+        from services import auth_service
+        if not auth_service.auth_enabled():
+            return await self.app(scope, receive, send)
+
+        path = scope.get("path", "")
+        if scope["type"] == "http" and (
+            path in _SHELL_PATHS
+            or path.startswith(_STATIC_PUBLIC_PREFIXES)
+            or path.startswith(_AUTH_PUBLIC_PREFIXES)
+        ):
+            return await self.app(scope, receive, send)
+
+        from starlette.requests import HTTPConnection
+
+        conn = HTTPConnection(scope)
+        payload = auth_service.verify_session(conn.cookies.get(auth_service.SESSION_COOKIE))
+        if payload:
+            user = auth_service.get_user(payload.get("email", ""))
+            if user and user.active:
+                scope.setdefault("state", {})["auth_user"] = {
+                    "email": user.email,
+                    "admin": user.admin,
+                    "name": user.name,
+                }
+                return await self.app(scope, receive, send)
+
+        if scope["type"] == "websocket":
+            await receive()
+            await send({"type": "websocket.close", "code": 1008})
+            return
+        resp = JSONResponse({"detail": "login required", "auth": "google"}, status_code=401)
+        return await resp(scope, receive, send)
 
 
 class NetworkAccessMiddleware:
@@ -890,6 +946,10 @@ app.add_middleware(NetworkAccessMiddleware)
 # keyed non-loopback client must reach them.
 app.add_middleware(BearerKeyMiddleware)
 
+# Optional Google account gate. Registered after the remote/PIN gates so those
+# deployment credentials are still enforced before app-login sessions.
+app.add_middleware(GoogleAuthMiddleware)
+
 # Register canonical audio MIME types before any StaticFiles mount.
 # Python's `mimetypes.guess_type()` returns `audio/x-wav` for `.wav` and
 # `audio/x-flac` for `.flac` on most platforms — these are vendor-experimental
@@ -930,6 +990,7 @@ def health():
     return {"status": "ok", "device": device, "version": APP_VERSION}
 
 
+app.include_router(auth.router)
 app.include_router(system.router)
 app.include_router(profiles.router)
 app.include_router(exports.router)

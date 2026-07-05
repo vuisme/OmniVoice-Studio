@@ -46,7 +46,7 @@ describe('apiFetch PIN header', () => {
     }
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(0); // transport failure, not HTTP
-    expect(String(err.message)).toMatch(/reach the local OmniVoice backend/i);
+      expect(String(err.message)).toMatch(/reach the local MiloAnCutlabs backend/i);
     expect(String(err.detail)).toMatch(/Failed to fetch/);
   });
 });

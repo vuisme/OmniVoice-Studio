@@ -17,6 +17,7 @@ import './ui';
 import './index.css';
 import App from './App.jsx';
 import RemoteAuthGate from './components/RemoteAuthGate';
+import GoogleAuthGate from './components/GoogleAuthGate';
 import { installConsoleCapture } from './utils/consoleBuffer.js';
 import { installGlobalErrorHandlers } from './utils/globalErrorHandlers.js';
 
@@ -65,38 +66,40 @@ export async function bootstrapApp() {
             setup-status check, SetupWizard, BootstrapSplash — still gets the
             PIN dialog instead of a silent 401. Loopback / QR users are
             unaffected (the gate only shows on an ov:pin-required event). */}
-        <RemoteAuthGate>
-          {isWidget ? (
-            <Suspense
-              fallback={
-                <div
-                  style={{
-                    position: 'fixed',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(18, 18, 22, 0.88)',
-                    backdropFilter: 'blur(24px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '100px',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    fontFamily: '"Inter Variable", "Inter", -apple-system, sans-serif',
-                    fontSize: 13,
-                    userSelect: 'none',
-                  }}
-                >
-                  Loading dictation…
-                </div>
-              }
-            >
-              <CaptureWidget />
-            </Suspense>
-          ) : (
-            <App />
-          )}
-        </RemoteAuthGate>
+        <GoogleAuthGate>
+          <RemoteAuthGate>
+            {isWidget ? (
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      position: 'fixed',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(18, 18, 22, 0.88)',
+                      backdropFilter: 'blur(24px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '100px',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontFamily: '"Inter Variable", "Inter", -apple-system, sans-serif',
+                      fontSize: 13,
+                      userSelect: 'none',
+                    }}
+                  >
+                    Loading dictation…
+                  </div>
+                }
+              >
+                <CaptureWidget />
+              </Suspense>
+            ) : (
+              <App />
+            )}
+          </RemoteAuthGate>
+        </GoogleAuthGate>
       </QueryClientProvider>
     </StrictMode>,
   );

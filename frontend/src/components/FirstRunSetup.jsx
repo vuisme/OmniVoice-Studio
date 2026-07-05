@@ -447,7 +447,7 @@ export default function FirstRunSetup() {
             <div className="mt-2 flex flex-wrap items-end justify-between gap-6">
               <div className="min-w-0">
                 <h1 className="m-0 font-serif text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-tight tracking-tight">
-                  {t('firstrun.title', 'Set up OmniVoice Studio')}
+                  {t('firstrun.title', 'Set up MiloAnCutlabs')}
                 </h1>
                 <p className="mt-1.5 max-w-[58ch] text-sm leading-snug text-fg-muted">
                   {t(
@@ -829,7 +829,7 @@ export function JourneyRail({ active, t }) {
   return (
     <nav
       className="flex flex-wrap items-center gap-x-5 gap-y-2"
-      aria-label={t('firstrun.title', 'Set up OmniVoice Studio')}
+      aria-label={t('firstrun.title', 'Set up MiloAnCutlabs')}
     >
       {stages.map(([id, label], i) => {
         const isActive = i === activeIdx;

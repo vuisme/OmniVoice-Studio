@@ -12,11 +12,8 @@ import {
   AlertCircle,
   Info,
   FileText,
-  Heart,
-  Mail,
   Sparkles,
   Braces,
-  Gem,
 } from 'lucide-react';
 
 import toast from 'react-hot-toast';
@@ -27,8 +24,6 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import NetworkToggle from './NetworkToggle';
 import { APP_VERSION, whatsNewPending } from '../utils/appVersion';
-import DonateMomentPopover, { DONATE_POPOVER_AUTO_DISMISS_MS } from './DonateMomentPopover';
-import { DONATION_MOMENT_EVENT, optOutOfDonationMoments } from '../utils/donationMoments';
 
 /**
  * VSCode-style bottom panel for logs. Always-visible 28 px collapsed bar
@@ -128,28 +123,12 @@ const BADGE_NEUTRAL = `${BADGE_LAYOUT} [background:rgba(255,255,255,0.08)] [colo
 const BADGE_ERROR = `${BADGE_LAYOUT} [background:rgba(251,73,52,0.2)] [color:#fb4934]`;
 const BADGE_WARN = `${BADGE_LAYOUT} [background:rgba(250,189,47,0.2)] [color:#fabd2f]`;
 
-const DISCORD_BTN =
-  'flex items-center justify-center w-[var(--chrome-icon-btn)] h-[var(--chrome-icon-btn)] shrink-0 ' +
-  'rounded-[4px] bg-transparent border-0 cursor-pointer [color:#7289da] opacity-60 ' +
-  'transition-[color,opacity,transform] duration-150 hover:opacity-100 hover:[color:#5865F2] hover:scale-110';
-
 // API-reference button: same compact footer-icon shell as Discord/Mail but on
 // the neutral chrome-muted palette, hovering to the theme accent.
 const API_REF_BTN =
   'flex items-center justify-center w-[var(--chrome-icon-btn)] h-[var(--chrome-icon-btn)] shrink-0 ' +
   'rounded-[4px] bg-transparent border-0 cursor-pointer [color:var(--chrome-fg-muted)] opacity-70 ' +
   'transition-[color,opacity,transform] duration-150 hover:opacity-100 hover:[color:var(--chrome-accent)] hover:scale-110';
-
-const DONATE_BTN =
-  'flex items-center justify-center w-[var(--chrome-icon-btn)] h-[var(--chrome-icon-btn)] shrink-0 ' +
-  'rounded-[4px] bg-transparent border-0 cursor-pointer [color:#d3869b] ' +
-  'transition-[color,transform] duration-150 hover:[color:var(--chrome-accent)] hover:scale-[1.15]';
-// Idle glow vs. the gentle attention pulse while the donation-moment popover
-// is open. Split from DONATE_BTN so exactly one animation applies at a time.
-const HEART_GLOW =
-  '[animation:heart-glow_2.5s_ease-in-out_infinite] motion-reduce:[animation:none]';
-const HEART_PULSE =
-  '[animation:donate-heart-pulse_1.1s_ease-in-out_infinite] motion-reduce:[animation:none]';
 
 function SourcePill({ source, counts, active, onClick, icon: Icon }) {
   const hasErrors = counts.error > 0;
@@ -181,36 +160,6 @@ function SourcePill({ source, counts, active, onClick, icon: Icon }) {
       )}
     </button>
   );
-}
-
-// ── Seasonal / random donate heart ──────────────────────────────────────
-// Christmas (Dec), Diwali (~Oct-Nov), Valentine's (Feb), Eid (~Mar-Apr),
-// default pool rotates daily based on day-of-year.
-const HEART_POOL = ['❤️', '🩷', '💜', '💙', '🧡', '💛', '🩵', '💖', '💗'];
-const SEASONAL = [
-  { month: 12, emoji: '🎄', color: '#e74c3c', title: 'Merry Christmas! Support this project' },
-  { month: 2, emoji: '💝', color: '#ff6b81', title: "Happy Valentine's! Support this project" },
-  // Diwali window — roughly Kartik Amavasya (Oct–Nov)
-  { month: 10, emoji: '🪔', color: '#f5a623', title: 'Happy Diwali! Support this project' },
-  { month: 11, emoji: '✨', color: '#f5a623', title: 'Happy Diwali! Support this project' },
-];
-
-function DonateHeart() {
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-
-  const seasonal = SEASONAL.find((s) => s.month === month);
-  if (seasonal) {
-    return (
-      <span style={{ fontSize: 14, lineHeight: 1 }} title={seasonal.title}>
-        {seasonal.emoji}
-      </span>
-    );
-  }
-  // Rotate through the pool daily
-  const pick = HEART_POOL[dayOfYear % HEART_POOL.length];
-  return <span style={{ fontSize: 14, lineHeight: 1 }}>{pick}</span>;
 }
 
 export default function LogsFooter() {
@@ -326,22 +275,6 @@ export default function LogsFooter() {
   const notifQuery = useNotifications();
   const notifications = notifQuery.data?.notifications || [];
 
-  // ── Donation moment popover (see utils/donationMoments.js) ─────────────
-  // The eligibility engine dispatches DONATION_MOMENT_EVENT after a rare,
-  // gated value-creation success; the footer just renders the speech bubble
-  // above the heart and auto-dismisses it. null = closed.
-  const [donateMoment, setDonateMoment] = useState(null);
-  useEffect(() => {
-    const onMoment = (e) => setDonateMoment({ line: e?.detail?.line ?? 0 });
-    window.addEventListener(DONATION_MOMENT_EVENT, onMoment);
-    return () => window.removeEventListener(DONATION_MOMENT_EVENT, onMoment);
-  }, []);
-  useEffect(() => {
-    if (!donateMoment) return undefined;
-    const timer = setTimeout(() => setDonateMoment(null), DONATE_POPOVER_AUTO_DISMISS_MS);
-    return () => clearTimeout(timer);
-  }, [donateMoment]);
-
   // Allow header bell to open notifications tab
   useEffect(() => {
     const handler = () => {
@@ -439,7 +372,7 @@ export default function LogsFooter() {
     // + user agent — onto the clipboard so the user can paste into a
     // GitHub issue without hand-collecting files.
     const header = [
-      `OmniVoice Studio — diagnostic report`,
+      `MiloAnCutlabs — diagnostic report`,
       `When: ${new Date().toISOString()}`,
       `UA: ${navigator.userAgent}`,
       `Counts: backend err=${counts.backend.error}/warn=${counts.backend.warn}, ` +
@@ -641,79 +574,6 @@ export default function LogsFooter() {
           >
             <Braces size={14} aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            className={DISCORD_BTN}
-            onClick={() => {
-              import('../api/external').then((m) =>
-                m.openExternal('https://discord.gg/bzQavDfVV9'),
-              );
-            }}
-            title={t('logs.join_discord')}
-            aria-label={t('logs.join_discord_aria')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.947 2.418-2.157 2.418z" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            className={DISCORD_BTN}
-            onClick={() => useAppStore.getState().setMode?.('contact')}
-            title={t('logs.contact', { defaultValue: 'Contact' })}
-            aria-label={t('logs.contact_aria', { defaultValue: 'Open the contact page' })}
-          >
-            <Mail size={14} />
-          </button>
-          {/* Sponsors — a compact link (never a logo strip in the 28px bar).
-              Opens the Support page, whose Sponsors section holds the logo
-              grid + "Become a sponsor" affordance. */}
-          <button
-            type="button"
-            className={
-              'shrink-0 inline-flex items-center gap-[4px] px-[7px] h-[var(--chrome-icon-btn)] rounded-[4px] ' +
-              'bg-transparent border-0 cursor-pointer text-[11px] tracking-[0.02em] ' +
-              '[color:var(--chrome-fg-muted)] transition-[color,opacity] duration-150 ' +
-              'hover:[color:var(--chrome-accent)]'
-            }
-            onClick={() => useAppStore.getState().setMode?.('donate')}
-            title={t('logs.sponsors', { defaultValue: 'Sponsors' })}
-            aria-label={t('logs.sponsors_aria', {
-              defaultValue: 'View sponsors and support the project',
-            })}
-          >
-            <Gem size={12} aria-hidden="true" />
-            {t('logs.sponsors', { defaultValue: 'Sponsors' })}
-          </button>
-          <div className="relative inline-flex shrink-0 ml-[4px]">
-            <button
-              type="button"
-              className={`${DONATE_BTN} ${donateMoment ? HEART_PULSE : HEART_GLOW}`}
-              onClick={() => {
-                // Manual entry is unchanged: the heart always opens the full
-                // donate view (and quietly retires an open popover).
-                setDonateMoment(null);
-                useAppStore.getState().setMode?.('donate');
-              }}
-              title={t('logs.support_project')}
-              aria-label={t('logs.support_project_aria')}
-            >
-              <DonateHeart />
-            </button>
-            {donateMoment && (
-              <DonateMomentPopover
-                line={donateMoment.line}
-                onLater={() => setDonateMoment(null)}
-                onOptOut={() => {
-                  optOutOfDonationMoments();
-                  // Mirror into the legacy postcard flag so both engines stay
-                  // permanently silenced no matter which one is wired.
-                  useAppStore.getState().optOutOfDonation?.();
-                  setDonateMoment(null);
-                }}
-              />
-            )}
-          </div>
         </div>
       </div>
 
