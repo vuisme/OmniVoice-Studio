@@ -100,9 +100,9 @@ function PreflightPanel({ report, loading, onRecheck }) {
           {t('setup.recheck')}
         </Button>
       </h2>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] items-start gap-x-6 gap-y-2">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] items-start gap-x-4 gap-y-1">
         {report.checks.map((c) => (
-          <div key={c.id} className="flex items-start gap-2 rounded-md px-2.5 py-2">
+          <div key={c.id} className="flex items-start gap-2 rounded-md px-2 py-1.5">
             <span
               className={cn(
                 'mt-1 h-1.5 w-1.5 shrink-0 rounded-full',
@@ -111,7 +111,7 @@ function PreflightPanel({ report, loading, onRecheck }) {
               aria-hidden="true"
             />
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-sm font-semibold">{c.label}</span>
+              <span className="text-[0.82rem] font-semibold leading-snug">{c.label}</span>
               <span className="truncate text-xs text-fg-muted" dir="rtl" title={c.detail}>
                 {c.detail}
               </span>
@@ -251,25 +251,25 @@ export default function SetupWizard({ onReady }) {
   ];
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center overflow-hidden bg-bg px-6 pt-12 font-sans text-fg">
-      <div className="flex w-full max-w-[1100px] flex-1 flex-col">
+    <div className="flex h-full min-h-0 flex-col items-center overflow-hidden bg-bg px-4 pt-8 font-sans text-fg sm:px-6 sm:pt-10">
+      <div className="flex min-h-0 w-full max-w-[1100px] flex-1 flex-col">
         {/* ── Masthead: identical identity to setup + install acts ────────── */}
         <header
-          className="fr-rise flex flex-col gap-3 pb-1"
+          className="fr-rise flex shrink-0 flex-col gap-2 pb-2"
           style={{ '--rise': 0 }}
           data-tauri-drag-region
           onDoubleClick={doubleClickMaximize}
         >
           <Waveform />
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-6">
+          <div className="mt-1 flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0">
               <h1
-                className="m-0 font-serif text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-tight tracking-tight"
+                className="m-0 font-serif text-[clamp(1.35rem,3vw,2rem)] font-semibold leading-tight tracking-tight"
                 data-tauri-drag-region
               >
                 MLACLabs
               </h1>
-              <p className="mt-1.5 text-sm leading-snug text-fg-muted" data-tauri-drag-region>
+              <p className="mt-1 text-sm leading-snug text-fg-muted" data-tauri-drag-region>
                 {STEP_SUBTITLES[step]}
               </p>
             </div>
@@ -286,11 +286,14 @@ export default function SetupWizard({ onReady }) {
         {/* 0. System check — first thing a user sees: the probe auto-runs. */}
         {step === 0 && (
           <div className="flex min-h-0 flex-auto flex-col gap-3" key="step-0">
-            <div className="fr-rise min-h-0 flex-1 overflow-y-auto" style={{ '--rise': 1 }}>
+            <div
+              className="fr-rise min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1"
+              style={{ '--rise': 1 }}
+            >
               <PreflightPanel report={pre} loading={preLoading} onRecheck={recheckPreflight} />
             </div>
             <div
-              className="fr-rise flex shrink-0 items-center justify-between gap-4 border-t border-border pt-3"
+              className="fr-rise flex shrink-0 items-center justify-between gap-4 border-t border-border bg-bg/95 py-2"
               style={{ '--rise': 2 }}
             >
               <span />
@@ -315,7 +318,7 @@ export default function SetupWizard({ onReady }) {
         {step === 1 && (
           <div className="flex min-h-0 flex-auto flex-col gap-3" key="step-1">
             <section
-              className="fr-rise flex min-h-0 flex-1 flex-col gap-2.5"
+              className="fr-rise flex min-h-0 flex-1 flex-col gap-2.5 overflow-hidden"
               style={{ '--rise': 1 }}
             >
               <SectionHead>{t('firstrun.stage_models', 'Models & engines')}</SectionHead>
@@ -331,7 +334,7 @@ export default function SetupWizard({ onReady }) {
                 action. */}
             <HfTokenCard className="shrink-0" />
             <div
-              className="fr-rise flex shrink-0 items-center justify-between gap-4 border-t border-border pt-3"
+              className="fr-rise flex shrink-0 items-center justify-between gap-4 border-t border-border bg-bg/95 py-2"
               style={{ '--rise': 2 }}
             >
               <Button variant="ghost" size="sm" onClick={() => setStep(0)}>
@@ -353,16 +356,16 @@ export default function SetupWizard({ onReady }) {
         {step === 2 && (
           <div className="flex min-h-0 flex-auto flex-col gap-3" key="step-2">
             <section
-              className="fr-rise flex min-h-0 flex-1 flex-col gap-2.5"
+              className="fr-rise flex min-h-0 flex-1 flex-col gap-2.5 overflow-hidden"
               style={{ '--rise': 1 }}
             >
               <SectionHead>{t('setup.try_dictation')}</SectionHead>
-              <div className="max-h-[min(58vh,640px)] min-w-0 overflow-y-auto rounded-lg">
+              <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain rounded-lg">
                 <DictationDemo />
               </div>
             </section>
             <div
-              className="fr-rise flex shrink-0 items-center justify-between gap-4 border-t border-border pt-3"
+              className="fr-rise flex shrink-0 items-center justify-between gap-4 border-t border-border bg-bg/95 py-2"
               style={{ '--rise': 2 }}
             >
               <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
@@ -386,7 +389,7 @@ export default function SetupWizard({ onReady }) {
           </div>
         )}
 
-        <footer className="shrink-0 py-3">
+        <footer className="shrink-0 py-2">
           <span className="inline-flex flex-wrap items-center gap-2 text-xs text-fg-muted">
             {t('setup.footer_downloads')}
             <span aria-hidden="true">·</span>

@@ -170,24 +170,28 @@ const CHIP_TONE = { req: 'brand', rec: 'success', eng: 'neutral', opt: 'neutral'
 
 function Row({ led, name, chip, chipTone, size, action, sub }) {
   return (
-    <div className="flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-bg-elev-3">
+    <div className="flex items-center gap-2 rounded-md px-2.5 py-1.5 transition-colors hover:bg-bg-elev-3">
       <span
         className={cn('h-1.5 w-1.5 shrink-0 rounded-full', LED_TONE[led] || LED_TONE.off)}
         aria-hidden="true"
       />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="flex items-center gap-2 text-sm font-semibold">
-          {name}
+        <span className="flex min-w-0 items-center gap-1.5 text-[0.82rem] font-semibold leading-snug">
+          <span className="min-w-0 truncate">{name}</span>
           {chip && (
-            <Badge tone={CHIP_TONE[chipTone] || 'neutral'} size="xs">
+            <Badge className="shrink-0" tone={CHIP_TONE[chipTone] || 'neutral'} size="xs">
               {chip}
             </Badge>
           )}
         </span>
         {sub && <span className="block min-w-0">{sub}</span>}
       </div>
-      <span className="shrink-0 font-mono text-[0.64rem] tabular-nums text-fg-muted">{size}</span>
-      {action}
+      {size && (
+        <span className="shrink-0 font-mono text-[0.62rem] tabular-nums text-fg-muted">
+          {size}
+        </span>
+      )}
+      <div className="shrink-0">{action}</div>
     </div>
   );
 }
@@ -324,14 +328,14 @@ export default function WizardLibrary() {
         size={fmtGB(m.size_gb)}
         sub={
           errored ? (
-            <span className="block max-w-[280px] font-mono text-[0.64rem] leading-snug text-danger">
+            <span className="block max-w-[min(360px,100%)] font-mono text-[0.64rem] leading-snug text-danger">
               {t('firstrun.lib_install_failed', {
                 error: p.error,
                 defaultValue: 'Install failed: {{error}}',
               })}
             </span>
           ) : downloading ? (
-            <span className="block h-[3px] max-w-[280px] overflow-hidden rounded-full bg-fg/[0.08]">
+            <span className="block h-[3px] max-w-[min(360px,100%)] overflow-hidden rounded-full bg-fg/[0.08]">
               <span
                 className="block h-full rounded-full bg-primary transition-[width] duration-300"
                 style={{ width: `${pct ?? 4}%` }}
@@ -349,7 +353,7 @@ export default function WizardLibrary() {
               {t('firstrun.lib_retry', 'Retry')}
             </Button>
           ) : downloading ? (
-            <span className="shrink-0 font-mono text-[0.64rem] tabular-nums text-primary">
+            <span className="font-mono text-[0.62rem] tabular-nums text-primary">
               {statParts.length
                 ? statParts.join(' · ')
                 : t('firstrun.lib_downloading', 'downloading…')}
@@ -365,73 +369,76 @@ export default function WizardLibrary() {
   };
 
   return (
-    <div className="flex max-h-[min(56vh,620px)] flex-col gap-1 overflow-y-auto">
-      {required.map((m) => modelRow(m, t('firstrun.chip_required', 'required'), 'req'))}
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+      <div className="flex flex-col gap-0.5">
+        {required.map((m) => modelRow(m, t('firstrun.chip_required', 'required'), 'req'))}
 
-      {/* Optional models tuned for THIS machine — shown by default with the
+        {/* Optional models tuned for THIS machine — shown by default with the
           catalog note explaining why (e.g. "5× faster on Apple Silicon"). */}
-      {platformPicks.map((m) =>
-        modelRow(m, t('firstrun.chip_recommended', 'recommended'), 'rec', m.note),
-      )}
+        {platformPicks.map((m) =>
+          modelRow(m, t('firstrun.chip_recommended', 'recommended'), 'rec', m.note),
+        )}
 
-      {(engines?.backends ?? []).map((b) => (
-        <Row
-          key={b.id}
-          led={b.id === engines.active ? 'active' : b.available ? 'ok' : 'off'}
-          name={b.display_name}
-          chip={t('firstrun.chip_engine', 'engine')}
-          chipTone="eng"
-          size=""
-          action={
-            b.id === engines.active ? (
-              <span className="shrink-0 font-mono text-[0.64rem] text-primary">
-                {t('firstrun.lib_active', 'active')}
-              </span>
-            ) : b.available ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={switching === b.id}
-                // eslint-disable-next-line react-hooks/rules-of-hooks -- useEngine is an action fn, not a React hook
-                onClick={() => useEngine(b.id)}
-              >
-                {t('firstrun.lib_use', 'Use')}
-              </Button>
-            ) : (
-              <span
-                className="shrink-0 font-mono text-[0.64rem] text-fg-muted"
-                title={b.reason || undefined}
-              >
-                {t('firstrun.lib_in_settings', 'install later in Settings')}
-              </span>
-            )
-          }
-        />
-      ))}
+        {(engines?.backends ?? []).map((b) => (
+          <Row
+            key={b.id}
+            led={b.id === engines.active ? 'active' : b.available ? 'ok' : 'off'}
+            name={b.display_name}
+            chip={t('firstrun.chip_engine', 'engine')}
+            chipTone="eng"
+            size=""
+            action={
+              b.id === engines.active ? (
+                <span className="font-mono text-[0.62rem] text-primary">
+                  {t('firstrun.lib_active', 'active')}
+                </span>
+              ) : b.available ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={switching === b.id}
+                  // eslint-disable-next-line react-hooks/rules-of-hooks -- useEngine is an action fn, not a React hook
+                  onClick={() => useEngine(b.id)}
+                >
+                  {t('firstrun.lib_use', 'Use')}
+                </Button>
+              ) : (
+                <span
+                  className="font-mono text-[0.62rem] text-fg-muted"
+                  title={b.reason || undefined}
+                >
+                  {t('firstrun.lib_in_settings', 'install later in Settings')}
+                </span>
+              )
+            }
+          />
+        ))}
 
-      {tail.length > 0 && !showTail && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="self-start"
-          onClick={() => setShowTail(true)}
-          leading={<ChevronRight size={12} />}
-        >
-          {t('firstrun.lib_show_all', {
-            count: tail.length,
-            defaultValue: 'Show {{count}} more models',
-          })}
-        </Button>
-      )}
-      {showTail && tail.map((m) => modelRow(m, t('firstrun.chip_optional', 'optional'), 'opt'))}
-      {Object.keys(progress).length > 0 && (
-        <p className="m-0 text-xs text-fg-subtle">
-          {t(
-            'firstrun.resume_note',
-            'Interrupted downloads resume automatically — closing the app is safe.',
-          )}
-        </p>
-      )}
+        {tail.length > 0 && !showTail && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="self-start"
+            onClick={() => setShowTail(true)}
+            leading={<ChevronRight size={12} />}
+          >
+            {t('firstrun.lib_show_all', {
+              count: tail.length,
+              defaultValue: 'Show {{count}} more models',
+            })}
+          </Button>
+        )}
+        {showTail &&
+          tail.map((m) => modelRow(m, t('firstrun.chip_optional', 'optional'), 'opt'))}
+        {Object.keys(progress).length > 0 && (
+          <p className="m-0 text-xs text-fg-subtle">
+            {t(
+              'firstrun.resume_note',
+              'Interrupted downloads resume automatically — closing the app is safe.',
+            )}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
