@@ -4,8 +4,10 @@ import uuid
 import time
 import asyncio
 import logging
+import hashlib
 from typing import Optional, List
 from pathlib import Path
+from urllib.parse import urlparse
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException, Query
 from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
@@ -21,6 +23,58 @@ router = APIRouter()
 
 VOICE_GALLERY_DIR = Path(os.path.join(OUTPUTS_DIR, "voice_gallery"))
 VOICE_GALLERY_DIR.mkdir(parents=True, exist_ok=True)
+_HF_VI_BASE = "https://huggingface.co/datasets/STBack23/omnivoice-vi/resolve/main"
+_VI_GALLERY_VOICES = [
+    {
+        "id": "omnivoice-vi-ban-mai",
+        "name": "Ban Mai",
+        "slug": "ban_mai",
+        "audio_file": "ref.mp3",
+        "sha256": "c3774c27143f771951697874889027695ae05ad8d6a88a8e5500ba589d3392e6",
+        "ref_text": "Capybara, còn được gọi là chuột lang nước, được mệnh danh là Bộ trưởng Bộ Ngoại giao trong thế giới động vật vì tính cách hiền lành, thân thiện và khả năng hòa đồng.",
+    },
+    {
+        "id": "omnivoice-vi-lan-trinh",
+        "name": "Lan Trinh",
+        "slug": "lan_trinh",
+        "audio_file": "ref.wav",
+        "sha256": "5369ba15dc222cd390d4d9f6db1253cd17ae3d9c60d3e5068484c1d4aba6af4b",
+        "ref_text": "Tức chết được, tức chết được. Vì tên và chuyên ngành y hệt nên mình mới đọc cuốn tiểu thuyết này.",
+    },
+    {
+        "id": "omnivoice-vi-ngan-ha",
+        "name": "Ngân Hà",
+        "slug": "ngan_ha",
+        "audio_file": "ref.wav",
+        "sha256": "1b11d5aacdc4797fd90162f1283c4721e8caca814b4ee285db20bf8f72ef45da",
+        "ref_text": "Tên hôn quân vô sĩ kia, sao dám nhìn lén bổn hậu tắm rữa!",
+    },
+    {
+        "id": "omnivoice-vi-ngoc-huyen",
+        "name": "Ngoc Huyen",
+        "slug": "ngoc_huyen",
+        "audio_file": "ref.mp3",
+        "sha256": "8a4628b205482f448499847bae3c2697a3f3c97be97b27e470cf670db3ff4e57",
+        "ref_text": "Capybara, còn được gọi là chuột lang nước, được mệnh danh là bộ trưởng bộ ngoại giao trong thế giới động vật.",
+    },
+    {
+        "id": "omnivoice-vi-thao-trinh",
+        "name": "Thảo Trinh",
+        "slug": "thao_trinh",
+        "audio_file": "ref.wav",
+        "sha256": "53c73596dbcf9edea22bee79485cc14bcc8c22764ee4a35be17436f8b3dc5b0f",
+        "ref_text": "Liên quan gì đến ngươi và Viện Thanh Sơn của ngươi, Gia Cát Nguyệt!",
+    },
+    {
+        "id": "omnivoice-vi-tuong-vy",
+        "name": "Tường Vy",
+        "slug": "tuong_vy",
+        "audio_file": "ref.wav",
+        "sha256": "4f4c2d8e0fadb33d3dce0e46bbaa58303676cb56b83b1c3761b8d41fd053ad7f",
+        "ref_text": "Mau mau xem mau. Nghe nói Thất công chúa đến đây để hủy hôn với thế tử, Trấn Bắc Vương.",
+    },
+]
+_VI_GALLERY_BY_ID = {v["id"]: v for v in _VI_GALLERY_VOICES}
 
 # Voice imports carry no project-authored taxonomy. The gallery deliberately
 # ships no curated directory of named real people (celebrities, politicians,
@@ -72,6 +126,69 @@ def _init_gallery_db():
             conn.execute("SELECT is_favorite FROM voice_gallery LIMIT 1")
         except Exception:
             conn.execute("ALTER TABLE voice_gallery ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0")
+        _seed_vietnamese_gallery_voices(conn)
+
+def _seed_vietnamese_gallery_voices(conn) -> None:
+    """Seed Vietnamese sample voices into the Gallery import table."""
+    now = time.time()
+    for voice in _VI_GALLERY_VOICES:
+        ext = Path(voice["audio_file"]).suffix or ".wav"
+        audio_path = str(VOICE_GALLERY_DIR / f"{voice['id']}{ext}")
+        source_url = f"{_HF_VI_BASE}/voices/{voice['slug']}/{voice['audio_file']}"
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO voice_gallery
+                (id, name, character, category, source_type, source_url, audio_path,
+                 duration, description, tags, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                voice["id"],
+                voice["name"],
+                "",
+                "vietnamese",
+                "sample",
+                source_url,
+                audio_path,
+                10.0,
+                voice["ref_text"],
+                json.dumps(["vietnamese", "sample", "STBack23/omnivoice-vi"]),
+                now,
+            ),
+        )
+
+def _ensure_gallery_audio(row) -> str:
+    """Download a seeded Gallery voice's audio if its local file is missing."""
+    audio_path = row["audio_path"]
+    if audio_path and os.path.exists(audio_path):
+        return audio_path
+
+    voice = _VI_GALLERY_BY_ID.get(row["id"])
+    if not voice:
+        return audio_path
+
+    source_url = row["source_url"] or ""
+    parsed = urlparse(source_url)
+    if parsed.scheme != "https" or parsed.hostname != "huggingface.co":
+        raise HTTPException(status_code=400, detail="Seeded voice audio URL is not allowed.")
+
+    import httpx
+
+    with httpx.Client(timeout=30.0, follow_redirects=True) as client:
+        resp = client.get(source_url)
+        resp.raise_for_status()
+        data = resp.content
+
+    got = hashlib.sha256(data).hexdigest()
+    if got != voice["sha256"]:
+        raise HTTPException(status_code=502, detail="Seeded voice failed its integrity check.")
+
+    path = Path(audio_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_bytes(data)
+    tmp.replace(path)
+    return str(path)
 
 
 @router.get("/gallery/categories")
@@ -362,13 +479,15 @@ async def save_voice_as_profile(
         if not row:
             raise HTTPException(status_code=404, detail="Voice not found")
 
-        profile_id = str(uuid.uuid4())[:8]
-        import shutil
+    audio_path = _ensure_gallery_audio(row)
+    profile_id = str(uuid.uuid4())[:8]
+    import shutil
 
-        ext = os.path.splitext(row["audio_path"])[1]
-        new_audio_path = os.path.join(VOICES_DIR, f"{profile_id}{ext}")
-        shutil.copy(row["audio_path"], new_audio_path)
+    ext = os.path.splitext(audio_path)[1]
+    new_audio_path = os.path.join(VOICES_DIR, f"{profile_id}{ext}")
+    shutil.copy(audio_path, new_audio_path)
 
+    with db_conn() as conn:
         conn.execute(
             """
             INSERT INTO voice_profiles (id, name, ref_audio_path, ref_text, instruct, language, seed, created_at)
@@ -395,13 +514,13 @@ def preview_voice(voice_id: str):
     """Get a voice clip for preview playback."""
     with db_conn() as conn:
         row = conn.execute(
-            "SELECT audio_path FROM voice_gallery WHERE id = ?", (voice_id,)
+            "SELECT * FROM voice_gallery WHERE id = ?", (voice_id,)
         ).fetchone()
 
     if not row:
         raise HTTPException(status_code=404, detail="Voice not found")
 
-    audio_path = row["audio_path"]
+    audio_path = _ensure_gallery_audio(row)
 
     # Debug logging
     is_absolute = os.path.isabs(audio_path)

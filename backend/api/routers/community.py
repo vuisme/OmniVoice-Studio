@@ -41,98 +41,10 @@ _DEFAULT_SOURCES = ["debpalash/omnivoice-gallery"]
 _ALLOWED_AUDIO_HOSTS = {
     "cdn.jsdelivr.net", "github.com", "raw.githubusercontent.com",
     "objects.githubusercontent.com", "release-assets.githubusercontent.com",
-    "huggingface.co",
 }
 _VALID_TOKENS = set(archetypes._VD._INSTRUCT_ALL_VALID)
 _USE_CASE_IDS = {c["id"] for c in archetypes.USE_CASES}
 _SOURCE_RE = re.compile(r"^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$")  # owner/repo only
-_HF_VI_BASE = "https://huggingface.co/datasets/STBack23/omnivoice-vi/resolve/main"
-_VI_VOICE_ITEMS = [
-    {
-        "id": "omnivoice-vi-ban-mai",
-        "type": "voice",
-        "name": "Ban Mai",
-        "use_case": "narration",
-        "facets": {"gender": "female", "lang": "Vietnamese"},
-        "language": "Vietnamese",
-        "source": "STBack23/omnivoice-vi",
-        "author": "STBack23",
-        "audio": {
-            "url": f"{_HF_VI_BASE}/voices/ban_mai/ref.mp3",
-            "sha256": "c3774c27143f771951697874889027695ae05ad8d6a88a8e5500ba589d3392e6",
-        },
-    },
-    {
-        "id": "omnivoice-vi-lan-trinh",
-        "type": "voice",
-        "name": "Lan Trinh",
-        "use_case": "narration",
-        "facets": {"gender": "female", "lang": "Vietnamese"},
-        "language": "Vietnamese",
-        "source": "STBack23/omnivoice-vi",
-        "author": "STBack23",
-        "audio": {
-            "url": f"{_HF_VI_BASE}/voices/lan_trinh/ref.wav",
-            "sha256": "5369ba15dc222cd390d4d9f6db1253cd17ae3d9c60d3e5068484c1d4aba6af4b",
-        },
-    },
-    {
-        "id": "omnivoice-vi-ngan-ha",
-        "type": "voice",
-        "name": "Ngan Ha",
-        "use_case": "narration",
-        "facets": {"gender": "female", "lang": "Vietnamese"},
-        "language": "Vietnamese",
-        "source": "STBack23/omnivoice-vi",
-        "author": "STBack23",
-        "audio": {
-            "url": f"{_HF_VI_BASE}/voices/ngan_ha/ref.wav",
-            "sha256": "1b11d5aacdc4797fd90162f1283c4721e8caca814b4ee285db20bf8f72ef45da",
-        },
-    },
-    {
-        "id": "omnivoice-vi-ngoc-huyen",
-        "type": "voice",
-        "name": "Ngoc Huyen",
-        "use_case": "narration",
-        "facets": {"gender": "female", "lang": "Vietnamese"},
-        "language": "Vietnamese",
-        "source": "STBack23/omnivoice-vi",
-        "author": "STBack23",
-        "audio": {
-            "url": f"{_HF_VI_BASE}/voices/ngoc_huyen/ref.mp3",
-            "sha256": "8a4628b205482f448499847bae3c2697a3f3c97be97b27e470cf670db3ff4e57",
-        },
-    },
-    {
-        "id": "omnivoice-vi-thao-trinh",
-        "type": "voice",
-        "name": "Thao Trinh",
-        "use_case": "narration",
-        "facets": {"gender": "female", "lang": "Vietnamese"},
-        "language": "Vietnamese",
-        "source": "STBack23/omnivoice-vi",
-        "author": "STBack23",
-        "audio": {
-            "url": f"{_HF_VI_BASE}/voices/thao_trinh/ref.wav",
-            "sha256": "53c73596dbcf9edea22bee79485cc14bcc8c22764ee4a35be17436f8b3dc5b0f",
-        },
-    },
-    {
-        "id": "omnivoice-vi-tuong-vy",
-        "type": "voice",
-        "name": "Tuong Vy",
-        "use_case": "narration",
-        "facets": {"gender": "female", "lang": "Vietnamese"},
-        "language": "Vietnamese",
-        "source": "STBack23/omnivoice-vi",
-        "author": "STBack23",
-        "audio": {
-            "url": f"{_HF_VI_BASE}/voices/tuong_vy/ref.wav",
-            "sha256": "4f4c2d8e0fadb33d3dce0e46bbaa58303676cb56b83b1c3761b8d41fd053ad7f",
-        },
-    },
-]
 
 
 # ── Config: which content repos to load ───────────────────────────────────────
@@ -244,13 +156,6 @@ def _load(refresh: bool) -> tuple[list[str], list, list, bool]:
     srcs = configured_sources()
     manifests = [(s, _fetch_manifest(s, refresh)) for s in srcs]
     items, packs = _merge(manifests)
-    seen = {it["id"] for it in items}
-    for raw in _VI_VOICE_ITEMS:
-        item = validate_item(raw)
-        if item and item["id"] not in seen:
-            item["_source_repo"] = "STBack23/omnivoice-vi"
-            items.append(item)
-            seen.add(item["id"])
     offline = all(m is None for _, m in manifests)
     return srcs, items, packs, offline
 
