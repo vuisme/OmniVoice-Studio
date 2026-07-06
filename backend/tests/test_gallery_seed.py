@@ -18,6 +18,13 @@ Path(_config.VOICES_DIR).mkdir(parents=True, exist_ok=True)
 Path(_config.OUTPUTS_DIR).mkdir(parents=True, exist_ok=True)
 sys.modules["core.config"] = _config
 
+_ffmpeg_utils = sys.modules.get("services.ffmpeg_utils")
+if _ffmpeg_utils is not None and not hasattr(_ffmpeg_utils, "spawn_subprocess"):
+    async def _spawn_subprocess_stub(*args, **kwargs):
+        raise RuntimeError("spawn_subprocess is not used by gallery seed tests")
+
+    _ffmpeg_utils.spawn_subprocess = _spawn_subprocess_stub
+
 from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
