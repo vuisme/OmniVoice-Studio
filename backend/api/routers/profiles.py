@@ -36,18 +36,6 @@ def list_profiles():
         rows = conn.execute("SELECT * FROM voice_profiles ORDER BY created_at DESC").fetchall()
     return [dict(r) for r in rows]
 
-@router.post("/profiles/seed/vietnamese")
-def seed_vietnamese_profiles():
-    """Ensure the bundled Vietnamese sample voices are being imported."""
-    from services.vietnamese_voice_seed import (
-        seed_vietnamese_voices_background,
-        vietnamese_voices_present,
-    )
-
-    present = vietnamese_voices_present()
-    started = False if present else seed_vietnamese_voices_background(cooldown_s=30.0)
-    return {"present": present, "started": started, "source": "STBack23/omnivoice-vi"}
-
 _DESIGN_SEED = 42  # deterministic sample render, same as archetype previews
 
 

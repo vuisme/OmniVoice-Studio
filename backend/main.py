@@ -524,11 +524,6 @@ async def lifespan(app: FastAPI):
     # Seed a demo voice profile on first run (empty DB only).
     from core.onboarding import seed_sample_project
     seed_sample_project()
-    try:
-        from services.vietnamese_voice_seed import seed_vietnamese_voices
-        seed_vietnamese_voices()
-    except Exception:
-        logger.exception("Vietnamese voice seed failed (non-fatal).")
     # Any job still in pending/running at startup is orphaned — a previous
     # process didn't finish it. Flip to failed with a clear message so the
     # UI doesn't show a fake spinner.

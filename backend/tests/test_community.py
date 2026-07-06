@@ -99,23 +99,39 @@ def test_merge_drops_invalid_and_dedups():
     assert ids == {"p1", "v1"}
     assert packs and packs[0]["id"] == "starter"
 
+def test_builtin_vietnamese_voices_validate():
+    items = [community.validate_item(i) for i in community._VI_VOICE_ITEMS]
+    assert all(items)
+    assert {i["id"] for i in items} == {
+        "omnivoice-vi-ban-mai",
+        "omnivoice-vi-lan-trinh",
+        "omnivoice-vi-ngan-ha",
+        "omnivoice-vi-ngoc-huyen",
+        "omnivoice-vi-thao-trinh",
+        "omnivoice-vi-tuong-vy",
+    }
+
 
 # ── endpoints (served from cache, no network) ─────────────────────────────────
 def test_manifest_endpoint_from_cache(client):
     body = client.get("/community/manifest").json()
-    assert body["count"] == 2
-    assert {i["id"] for i in body["items"]} == {"p1", "v1"}
+    assert body["count"] == 8
+    ids = {i["id"] for i in body["items"]}
+    assert {"p1", "v1", "omnivoice-vi-ban-mai"}.issubset(ids)
     assert "debpalash/omnivoice-gallery" in body["sources"]
 
 
 def test_items_filter_by_type(client):
     body = client.get("/community/items", params={"type": "voice"}).json()
-    assert [i["id"] for i in body["items"]] == ["v1"]
+    ids = [i["id"] for i in body["items"]]
+    assert body["total"] == 7
+    assert "v1" in ids
+    assert "omnivoice-vi-ban-mai" in ids
 
 
 def test_items_filter_by_use_case(client):
     body = client.get("/community/items", params={"use_case": "narration"}).json()
-    assert body["total"] == 2
+    assert body["total"] == 8
 
 
 def test_sources_endpoint(client):
