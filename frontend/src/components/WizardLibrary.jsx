@@ -187,9 +187,7 @@ function Row({ led, name, chip, chipTone, size, action, sub }) {
         {sub && <span className="block min-w-0">{sub}</span>}
       </div>
       {size && (
-        <span className="shrink-0 font-mono text-[0.62rem] tabular-nums text-fg-muted">
-          {size}
-        </span>
+        <span className="shrink-0 font-mono text-[0.62rem] tabular-nums text-fg-muted">{size}</span>
       )}
       <div className="shrink-0">{action}</div>
     </div>
@@ -373,8 +371,10 @@ export default function WizardLibrary() {
       <div className="flex flex-col gap-0.5">
         {required.map((m) => modelRow(m, t('firstrun.chip_required', 'required'), 'req'))}
 
-        {/* Optional models tuned for THIS machine — shown by default with the
-          catalog note explaining why (e.g. "5× faster on Apple Silicon"). */}
+        {/*
+          Optional models tuned for THIS machine — shown by default with the
+          catalog note explaining why (e.g. "5× faster on Apple Silicon").
+        */}
         {platformPicks.map((m) =>
           modelRow(m, t('firstrun.chip_recommended', 'recommended'), 'rec', m.note),
         )}
@@ -428,8 +428,7 @@ export default function WizardLibrary() {
             })}
           </Button>
         )}
-        {showTail &&
-          tail.map((m) => modelRow(m, t('firstrun.chip_optional', 'optional'), 'opt'))}
+        {showTail && tail.map((m) => modelRow(m, t('firstrun.chip_optional', 'optional'), 'opt'))}
         {Object.keys(progress).length > 0 && (
           <p className="m-0 text-xs text-fg-subtle">
             {t(
