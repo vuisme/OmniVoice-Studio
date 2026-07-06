@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '../store';
-import { listProfiles } from '../api/profiles';
+import { listProfiles, seedVietnameseProfiles } from '../api/profiles';
 import { listHistory } from '../api/generate';
 import { listProjects } from '../api/projects';
 import { listDubHistory } from '../api/dub';
@@ -152,6 +152,17 @@ export default function useAppData() {
       }
       if (cancelled) return;
       loadProfiles();
+      seedVietnameseProfiles()
+        .then((r) => {
+          if (!r?.started || cancelled) return;
+          setTimeout(() => {
+            if (!cancelled) loadProfiles();
+          }, 3000);
+          setTimeout(() => {
+            if (!cancelled) loadProfiles();
+          }, 10000);
+        })
+        .catch(() => {});
       loadHistory();
       loadDubHistory();
       loadProjects();

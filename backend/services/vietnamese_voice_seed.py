@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import threading
 import time
 import urllib.parse
 import urllib.request
@@ -49,6 +50,10 @@ _VOICES = (
     VietnameseVoice("tuong_vy", "Tuong Vy", "ref.wav"),
 )
 
+_seed_lock = threading.Lock()
+_seed_running = False
+_last_seed_attempt = 0.0
+
 
 def _dataset_url(path: str) -> str:
     return f"{_BASE}/{urllib.parse.quote(path)}"
@@ -86,6 +91,52 @@ def _download_profile(slug: str) -> dict:
         return {}
 
 
+def vietnamese_voices_present() -> bool:
+    """Return whether the Vietnamese sample voice pack is already in the library."""
+    try:
+        with db_conn() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS n FROM voice_profiles WHERE personality = ?",
+                ("omnivoice-vi",),
+            ).fetchone()
+        return bool(row and row["n"] > 0)
+    except Exception:
+        return False
+
+
+def seed_vietnamese_voices_background(*, cooldown_s: float = 300.0) -> bool:
+    """Kick the Vietnamese voice seed in a daemon thread.
+
+    Startup can miss the seed when Hugging Face/network is not ready yet. The
+    profile library calls this as a non-blocking retry so the UI can populate
+    the built-in Vietnamese voices after the app is already open.
+    """
+    global _seed_running, _last_seed_attempt
+    if os.environ.get("MLAC_SEED_VI_VOICES", "1").strip().lower() in {"0", "false", "no", "off"}:
+        return False
+    if vietnamese_voices_present():
+        return False
+    now = time.time()
+    with _seed_lock:
+        if _seed_running:
+            return False
+        if now - _last_seed_attempt < cooldown_s:
+            return False
+        _seed_running = True
+        _last_seed_attempt = now
+
+    def _run() -> None:
+        global _seed_running
+        try:
+            seed_vietnamese_voices()
+        finally:
+            with _seed_lock:
+                _seed_running = False
+
+    threading.Thread(target=_run, name="seed-vietnamese-voices", daemon=True).start()
+    return True
+
+
 def seed_vietnamese_voices() -> int:
     """Download and register the curated Vietnamese voice pack once.
 
@@ -107,7 +158,10 @@ def seed_vietnamese_voices() -> int:
             # Keep the source prompt cache next to the reference clip for future
             # engines that can consume it. Current profile generation uses
             # ref_audio_path + ref_text and builds its own in-memory cache.
-            _download(f"voices/{voice.slug}/voice.pt", voices_dir / voice.local_voice_pt)
+            try:
+                _download(f"voices/{voice.slug}/voice.pt", voices_dir / voice.local_voice_pt)
+            except Exception as exc:
+                logger.info("Vietnamese voice cache skipped for %s: %s", voice.slug, exc)
             try:
                 ref_text = _download_text(f"voices/{voice.slug}/ref_text.txt")
             except Exception:

@@ -5,6 +5,14 @@ export async function listProfiles(): Promise<Profile[]> {
   return apiJson<Profile[]>('/profiles');
 }
 
+export async function seedVietnameseProfiles(): Promise<{
+  present: boolean;
+  started: boolean;
+  source: string;
+}> {
+  return apiPost('/profiles/seed/vietnamese', {});
+}
+
 export async function getProfile(id: string): Promise<Profile> {
   return apiJson<Profile>(`/profiles/${id}`);
 }
