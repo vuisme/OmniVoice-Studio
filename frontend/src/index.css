@@ -349,6 +349,7 @@
   --chrome-label-size:    11px;
   --chrome-label-track:   0.06em;
   --chrome-bar-h:         28px;
+  --chrome-header-h:      var(--chrome-bar-h);
   --chrome-pill-h:        20px;
   --chrome-icon-btn:      22px;
 }

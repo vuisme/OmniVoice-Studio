@@ -1254,6 +1254,10 @@ function App() {
       )}
       <Toaster
         position="top-center"
+        containerStyle={{
+          top: 'calc(var(--chrome-header-h, 28px) + 12px)',
+          zIndex: 'var(--z-toast, 1200)',
+        }}
         toastOptions={{
           style: {
             background: 'rgba(40,40,40,0.9)',
@@ -1262,6 +1266,7 @@ function App() {
             border: '1px solid rgba(255,255,255,0.08)',
             fontSize: '0.72rem',
             padding: '4px 8px',
+            maxWidth: 'min(520px, calc(100vw - 24px))',
           },
           error: { iconTheme: { primary: '#fb4934', secondary: '#fff' } },
           success: { iconTheme: { primary: '#b8bb26', secondary: '#fff' } },
